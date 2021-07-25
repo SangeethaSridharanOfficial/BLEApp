@@ -262,7 +262,7 @@ const Devices = () => {
                     }} /> */}
                 </View>
             </Modal>
-        </DeviceContainer>
+        </DeviceContainer> 
     )
 };
 
