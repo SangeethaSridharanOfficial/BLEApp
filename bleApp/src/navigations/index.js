@@ -10,7 +10,6 @@ const AppNavigation = () => {
     return (
         <NavigationContainer>
             {(isLoggedIn) ? <DrawerNav/> : <AuthNavigation/>}
-            {/* <DrawerNav /> */}
         </NavigationContainer>
     )
 }

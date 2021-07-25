@@ -31,6 +31,14 @@ const deviceReducer = (state, {type, payload}) => {
             state.coords = payload;
             return {...state};
 
+        case 'SET_DTYPE':
+            state.devices.forEach(device => {
+                if(device.id === payload.currentDevice.id){
+                    device['dType'] = payload.deviceType;
+                }
+            });
+            return {...state};
+
         case 'REMOVE_DEVICE':
             state.devices = state.devices.filter(dev => dev.id !== payload.id);
             return {...state};

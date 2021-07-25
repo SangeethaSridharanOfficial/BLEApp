@@ -3,7 +3,7 @@ import { Button, View } from 'react-native';
 import styles from './styles';
 import { GlobalContext } from '../../context/Provider';
 
-const ToggleBtn = ({handleDevice, device, changeToAdd}) => {
+const ToggleBtn = ({handleDevice, device, isAdded}) => {
     const [btnName, setBtnName] = useState('Add');
     const [deviceId, setDeviceId] = useState('');
     const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
@@ -16,6 +16,12 @@ const ToggleBtn = ({handleDevice, device, changeToAdd}) => {
             setBtnName('Add');
         }
     }, [coords]);
+
+    useEffect(() => {
+        if(isAdded){
+            setBtnName('Remove');
+        }
+    }, [])
 
     const _onPress = () => {
         try{

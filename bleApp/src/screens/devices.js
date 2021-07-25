@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { BleManager } from 'react-native-ble-plx';
 import { requestLocationPermission } from '../utils/permission';
-import { View, ActivityIndicator, Button, ScrollView, TextInput } from 'react-native';
+import { Alert, View, ActivityIndicator, Button, ScrollView, TextInput, Text, TouchableOpacity } from 'react-native';
 import { GlobalContext } from '../context/Provider';
 import devicesAction from '../context/actions/devicesAction';
 import styles from '../components/container/styles';
@@ -17,9 +17,11 @@ const Devices = () => {
     const manager = new BleManager();
     const { deviceDispatch, deviceState: {devices, isScanning}, authDispatch, authState: {isLoggedIn, data} } = useContext(GlobalContext);
     const {setOptions, toggleDrawer} = useNavigation();
-    const [cordinatesVal, setCordinatesVal] = useState('');
+    const [xCoordsVal, setXCoordsVal] = useState('');
+    const [yCoordsVal, setYCoordsVal] = useState('');
     const [isModalVisible, setModalVisible] = useState(false);
     const [currentDevice, setCurrentDevice] = useState(null);
+    const [scannedDevices, setScannedDevices] = useState(null);
 
     const toggleModal = () => {
         setModalVisible(!isModalVisible);
@@ -41,39 +43,43 @@ const Devices = () => {
         });
     }, [])
 
-    const addCoordinates = () => {
+    useEffect(() => {
+        renderDevices();
+    }, [devices.length]);
+
+    const addCoordinates = (deviceType) => {
         try{
-            devicesAction(cordinatesVal, 'SET_COORDS')(deviceDispatch);
-            if(cordinatesVal){
-                handleDevice('ADD');
+            if(xCoordsVal && yCoordsVal){
+                let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
+                devicesAction(cordinatesVal, 'SET_COORDS')(deviceDispatch);
+                devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
+                handleDevice('ADD', deviceType, cordinatesVal, currentDevice);
+            }else{
+                Alert.alert('Error!!!', 'Please enter both X and Y coordinates to proceed', [
+                    {
+                      text: 'Ok',
+                      onPress: () => {},
+                    }
+                ]);
             }
-            
         }catch(err){
             console.error('Error in addCoordinates ', err.stack);
         }
     }
 
-    const cancelModal = () => {
+    const handleDevice = (async (type, dType, cordinatesVal, cDevice) => {
         try{
-            
-            
-        }catch(err){
-            console.error('Error in cancelModal ', err.stack);
-        }
-    }
-
-    const handleDevice = (async (type) => {
-        try{
-            devicesAction(currentDevice, type)(deviceDispatch);
+            devicesAction(cDevice, type)(deviceDispatch);
             let reqObj = {
                 toAdd: type === 'ADD',
-                dId: currentDevice.id
+                dId: cDevice.id,
+                dType
             };
             if(type === 'ADD'){
-                reqObj['dName'] = currentDevice.name;
+                reqObj['dName'] = cDevice.name;
                 reqObj['coords'] = cordinatesVal;
             }
-            axiosInstance.post('addTag', reqObj).then(() => {
+            axiosInstance.post('/ble/BLETag', reqObj).then(() => {
                 console.log('Info Saved Successfully!!');
             }).catch((err) => {
                 console.error('Error ', err);
@@ -87,7 +93,14 @@ const Devices = () => {
         try{
             setCurrentDevice(device);
             if(type === 'ADD') toggleModal();
-            else handleDevice();
+            else {
+                devices.forEach(d => {
+                    if(d.id === device.id){
+                        handleDevice('REMOVE', d.dType, null, device);
+                    }
+                })
+                
+            }
         }catch(err){
             console.error('Error in handleToggle ', err.stack);
         }
@@ -96,14 +109,30 @@ const Devices = () => {
     const renderDevices = () => {
         try{
             let resultedDevices = [];
-            if(devices.length){
-                devices.forEach(device => {
-                    resultedDevices.push(
-                        <Device device={device} handleToggle={handleToggle}/>
-                    )
-                });
-            }
-            return resultedDevices;
+            axiosInstance.get('/ble/allTags').then((resp) => {
+                if(devices.length){
+                    devices.forEach(device => {
+                        let count = 0;
+                        resp.data.data.forEach(data => {
+                            if(data._id === device.id){
+                                resultedDevices.push(
+                                    <Device key={device.id} device={device} handleToggle={handleToggle} isAdded={true} initCoords={data.coords}/>
+                                )
+                                count++;
+                            }
+                        })
+                        if(!count){
+                            resultedDevices.push(
+                                <Device key={device.id} device={device} handleToggle={handleToggle}/>
+                            )
+                            count--;
+                        }
+                    });
+                }
+                setScannedDevices(resultedDevices);
+            }).catch((err) => {
+                console.error('Error ', err);
+            })
         }catch(err){
             console.error('Error in renderDevices ', err.stack);
         }
@@ -132,7 +161,7 @@ const Devices = () => {
           setTimeout(() => {
             manager.stopDeviceScan();
             devicesAction(false, 'SCANNING')(deviceDispatch);
-            setIsLoading(false)
+            setIsLoading(false);
           }, 5000);
         }
     };
@@ -174,11 +203,55 @@ const Devices = () => {
             </View>
             
             <ScrollView>
-                {devices.length != 0 && <View>{renderDevices()}</View>}
+                {devices.length != 0 && <View>{scannedDevices}</View>}
             </ScrollView>
             <Modal isVisible={isModalVisible}>
-                <View>
-                    <TextInput style={styles.coordsIpt}
+                <View style={styles.addTagView}>
+                    <View style={styles.at_header}>
+                        <Text style={styles.at_he_text}>Add New Tags</Text>
+                    </View>
+                    <View style={styles.at_co_wrapper}>
+                        <View style={styles.at_co_cont}>
+                            <View style={styles.at_co_txt}>
+                                <Text style={styles.at_txt}>X: </Text>
+                            </View>
+                            <TextInput style={styles.at_ipt} onChangeText={(text) => {
+                                setXCoordsVal(text);
+                            }} 
+                            value={xCoordsVal}></TextInput>
+                        </View>
+                        <View style={styles.at_co_cont}>
+                            <View style={styles.at_co_txt}>
+                                <Text style={styles.at_txt}>Y: </Text>
+                            </View>
+                            <TextInput style={styles.at_ipt} onChangeText={(text) => {
+                                setYCoordsVal(text);
+                            }} 
+                            value={yCoordsVal}></TextInput>
+                        </View>
+                    </View>
+                    <View style={styles.tagBtns_wrapper}>
+                        <TouchableOpacity style={styles.at_btn} onPress={() => {
+                            addCoordinates('beacon');
+                            toggleModal();
+                        }}>
+                            <Text style={styles.at_btn_txt}>Beacon</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.at_btn} onPress={() => {
+                            addCoordinates('asset');
+                            toggleModal();
+                        }}>
+                            <Text style={styles.at_btn_txt}>Asset</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.at_cancel_btn_wrp}>
+                        <TouchableOpacity style={styles.at_cancel_btn} onPress={() => {
+                            toggleModal();
+                        }}>
+                            <Text style={styles.at_cancel_btn_txt}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {/* <TextInput style={styles.coordsIpt}
                         onChangeText={(text) => {
                             setCordinatesVal(text);
                         }} 
@@ -186,11 +259,7 @@ const Devices = () => {
                     ></TextInput>
                     <Button title="Cancel" onPress={() => {
                         toggleModal();
-                    }} />
-                    <Button title="Add" onPress={() => {
-                        addCoordinates();
-                        toggleModal();
-                    }} />
+                    }} /> */}
                 </View>
             </Modal>
         </DeviceContainer>

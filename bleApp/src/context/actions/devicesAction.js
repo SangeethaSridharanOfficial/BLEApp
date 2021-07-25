@@ -6,7 +6,7 @@ export default (payload, type) => dispatch => {
         })
     }else if(type === 'CLEAR'){
         dispatch({type})
-    }else if(type === 'SCANNING' || type === 'SET_COORDS'){
+    }else if(type === 'SCANNING' || type === 'SET_COORDS' || type === 'SET_DTYPE'){
         dispatch({type, payload})
     }
     

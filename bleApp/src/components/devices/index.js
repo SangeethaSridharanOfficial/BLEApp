@@ -6,7 +6,7 @@ import devicesAction from '../../context/actions/devicesAction';
 import styles from './styles';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 
-const Device = ({device, handleToggle}) => {
+const Device = ({device, handleToggle, isAdded, initCoords}) => {
     const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
     const [deviceCoords, setDeviceCoords] = useState(null);
     const [deviceId, setDeviceId] = useState('');
@@ -21,6 +21,12 @@ const Device = ({device, handleToggle}) => {
             setDeviceId('');
         }
     }, [coords]);
+
+    useEffect(() => {
+        if(initCoords){
+            setDeviceCoords(initCoords);
+        }
+    }, []);
 
     const handleDevice = (async (type) => {
         try{
@@ -47,7 +53,7 @@ const Device = ({device, handleToggle}) => {
             <TouchableOpacity style={styles.closeIcon} onPress={removeDevice}>
                 <Ionicon size={35} name="close" />
             </TouchableOpacity>
-            <ToggleBtn handleDevice={handleDevice} device={device} changeToAdd={coords ? true : false}/>
+            <ToggleBtn handleDevice={handleDevice} isAdded={isAdded} device={device} changeToAdd={initCoords ? true : false}/>
             <View style={styles.info}>
                 <Text>{device.id}</Text>
                 <View style={styles.subInfo}>
