@@ -13,9 +13,13 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
 
     useEffect(() => {
         if(device.id === deviceId && coords){
-            setDeviceCoords(coords);
+            if(device.coords){
+                setDeviceCoords(device.coords);
+            }else{
+                setDeviceCoords(null)
+            }
             setDeviceId('');
-            devicesAction('', 'SET_COORDS')(deviceDispatch);
+            devicesAction({cordinatesVal: '', currentDevice: null}, 'SET_COORDS')(deviceDispatch);
         }else if(device.id === deviceId && !coords){
             setDeviceCoords(null);
             setDeviceId('');
@@ -31,7 +35,8 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
     const handleDevice = (async (type) => {
         try{
             if(type === 'REMOVE'){
-                devicesAction('', 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal: '', currentDevice: device}, 'SET_COORDS')(deviceDispatch);
+                setDeviceCoords(null);
             }
             handleToggle(device, type);
             setDeviceId(device.id);

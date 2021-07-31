@@ -3,8 +3,9 @@ import { View, Text } from 'react-native';
 import Header from './header';
 import {useNavigation} from '@react-navigation/native';
 import { GlobalContext } from '../context/Provider';
+import Map from '../components/map';
 
-const Settings = () => {
+const Home = () => {
     const {setOptions, toggleDrawer} = useNavigation();
     const { authState: {data} } = useContext(GlobalContext);
 
@@ -19,9 +20,9 @@ const Settings = () => {
 
     return(
         <View>
-            <Text>Settings</Text>
+            <Map/>
         </View>
     )
 }
 
-export default Settings;
+export default Home;

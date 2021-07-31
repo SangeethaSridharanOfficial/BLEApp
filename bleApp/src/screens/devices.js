@@ -25,6 +25,8 @@ const Devices = () => {
 
     const toggleModal = () => {
         setModalVisible(!isModalVisible);
+        setXCoordsVal('');
+        setYCoordsVal('');
     };
    
 
@@ -51,7 +53,7 @@ const Devices = () => {
         try{
             if(xCoordsVal && yCoordsVal){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
-                devicesAction(cordinatesVal, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal, currentDevice, dType: deviceType}, 'SET_COORDS')(deviceDispatch);
                 devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
                 handleDevice('ADD', deviceType, cordinatesVal, currentDevice);
             }else{
@@ -115,6 +117,7 @@ const Devices = () => {
                         let count = 0;
                         resp.data.data.forEach(data => {
                             if(data._id === device.id){
+                                if(data.coords) devicesAction({cordinatesVal: data.coords, dType: data.dType, currentDevice: device}, 'SET_COORDS')(deviceDispatch);
                                 resultedDevices.push(
                                     <Device key={device.id} device={device} handleToggle={handleToggle} isAdded={true} initCoords={data.coords}/>
                                 )

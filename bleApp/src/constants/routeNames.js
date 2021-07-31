@@ -6,3 +6,4 @@ export const LOGOUT = 'Logout';
 export const PROFILE = 'Profile';
 export const FORGETPASS = 'ForgetPassword';
 export const RESETPASS = 'ResetPassword';
+export const HOME = 'Home'

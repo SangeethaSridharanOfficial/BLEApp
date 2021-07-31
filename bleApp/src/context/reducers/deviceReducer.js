@@ -28,7 +28,15 @@ const deviceReducer = (state, {type, payload}) => {
             return state;
 
         case 'SET_COORDS':
-            state.coords = payload;
+            state.coords = payload.cordinatesVal;
+            if(payload.currentDevice){
+                state.devices.forEach(device => {
+                    if(device.id === payload.currentDevice.id){
+                        device['coords'] = payload.cordinatesVal;
+                        device['dType'] = payload.dType;
+                    }
+                });
+            }
             return {...state};
 
         case 'SET_DTYPE':

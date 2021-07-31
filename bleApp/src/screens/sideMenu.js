@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { Alert, SafeAreaView, View, Text, TouchableOpacity } from 'react-native';
-import { DEVICES, PROFILE, SETTINGS } from '../constants/routeNames';
+import { DEVICES, HOME, PROFILE, SETTINGS } from '../constants/routeNames';
 import loginAction from '../context/actions/loginAction';
 import { GlobalContext } from '../context/Provider';
 import SMContainer from '../components/container/smContainer';
@@ -12,6 +12,11 @@ const SideMenu = ({ navigation }) => {
     return(
         <SafeAreaView>
             <SMContainer>
+                <TouchableOpacity style={[styles.devicesOpt, styles.smOpts]} onPress={() => {
+                  navigation.navigate(HOME)
+                }}>
+                  <Text style={styles.textStyle}>{HOME}</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={[styles.devicesOpt, styles.smOpts]} onPress={() => {
                   navigation.navigate(DEVICES)
                 }}>

@@ -101,7 +101,7 @@ export default StyleSheet.create({
 
     // add new tag styles - START
     addTagView: {
-        backgroundColor: '#006fbb',
+        backgroundColor: '#eaeaea',
         borderRadius: 8
     },
     at_header: {
@@ -112,7 +112,7 @@ export default StyleSheet.create({
         marginBottom: 10
     },
     at_he_text: {
-        color: 'white',
+        color: 'black',
         fontSize: 30,
         fontWeight: 'bold'
     },
@@ -125,7 +125,7 @@ export default StyleSheet.create({
         alignItems: 'center'
     },
     at_co_cont: {
-        backgroundColor: '#7cd254',
+        backgroundColor: '#e2e2e2',
         width: '45%',
         height: '70%',
         flexDirection: 'row',
@@ -141,7 +141,7 @@ export default StyleSheet.create({
     },
     at_txt: {
         fontSize: 24,
-        color: '#f71419',
+        color: 'black',
         fontWeight: 'bold'
     },
     at_ipt: {
@@ -158,7 +158,7 @@ export default StyleSheet.create({
         marginBottom: 20
     },
     at_btn: {
-        backgroundColor: '#01265a',
+        backgroundColor: colors.accent,
         width: '45%',
         height: '90%',
         flexDirection: 'row',
@@ -167,14 +167,14 @@ export default StyleSheet.create({
     },
     at_btn_txt: {
         fontSize: 24,
-        color: '#d6c538'
+        color: 'black'
     },
     at_cancel_btn_wrp: {
         width: '100%',
         height: 50
     },
     at_cancel_btn: {
-        backgroundColor: '#ffbe20',
+        backgroundColor: colors.accent,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',

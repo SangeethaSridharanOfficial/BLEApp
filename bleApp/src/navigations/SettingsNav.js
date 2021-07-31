@@ -4,7 +4,7 @@ import { SETTINGS } from '../constants/routeNames';
 import Settings from '../screens/settings';
 
 
-const DeviceNav = () => {
+const SettingsNav = () => {
     const HomeStack = createStackNavigator();
 
     return (
@@ -14,4 +14,4 @@ const DeviceNav = () => {
     )
 }
 
-export default DeviceNav;
+export default SettingsNav;

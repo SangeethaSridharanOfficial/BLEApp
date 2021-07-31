@@ -9,10 +9,10 @@ const ToggleBtn = ({handleDevice, device, isAdded}) => {
     const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
 
     useEffect(() => {
-        if(device.id === deviceId && coords){
+        if(device.id === deviceId && device.coords){
             setBtnName('Remove');
             setDeviceId('');
-        }else if(device.id === deviceId && !coords){
+        }else if(device.id === deviceId && !device.coords){
             setBtnName('Add');
         }
     }, [coords]);
