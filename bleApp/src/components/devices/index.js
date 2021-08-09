@@ -5,6 +5,7 @@ import { GlobalContext } from '../../context/Provider';
 import devicesAction from '../../context/actions/devicesAction';
 import styles from './styles';
 import Ionicon from 'react-native-vector-icons/Ionicons';
+import colors from '../../assets/themes/colors';
 
 const Device = ({device, handleToggle, isAdded, initCoords}) => {
     const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
@@ -54,7 +55,7 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
     }
 
     return(
-        <View style={styles.deviceHolder} key={device.id}>
+        <View style={[styles.deviceHolder, {backgroundColor: `${device.isScanned ? colors.grey : 'lightgrey'}`}]} key={device.id}>
             <TouchableOpacity style={styles.closeIcon} onPress={removeDevice}>
                 <Ionicon size={35} name="close" />
             </TouchableOpacity>

@@ -5,7 +5,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Ionicon from 'react-native-vector-icons/Ionicons';
 import { GlobalContext } from '../context/Provider';
 
-const Header = ({ toggleDrawer, data }) => {
+const Header = ({ toggleDrawer, data, activePage }) => {
     const { deviceDispatch, deviceState: {devices, isScanning} } = useContext(GlobalContext);
 
     return(
@@ -15,16 +15,14 @@ const Header = ({ toggleDrawer, data }) => {
                     toggleDrawer();
                 }}>
                 <MaterialIcon size={25} name="menu" />
+                <View style={styles.pageNameCont}>
+                    <Text style={styles.pageName}>{activePage}</Text>
+                </View>
             </TouchableOpacity>
             <View style={styles.rightWrapper}>
                 <View>
                     <Text style={styles.userName}>{data.userName}</Text>
                 </View>
-                {/* <TouchableOpacity onPress={() => {
-                    
-                }}>
-                    <Ionicon size={25} name="scan" />
-                </TouchableOpacity> */}
             </View>
         </View>
     )

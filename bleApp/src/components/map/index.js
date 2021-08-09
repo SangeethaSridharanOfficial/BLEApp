@@ -14,29 +14,29 @@ const Map = () => {
                     let coordsArr = device.coords.split(' ');
                     if(device.dType === 'beacon'){
                         assets.push(
-                            <TouchableOpacity style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                Alert.alert(device.name, device.id, [
+                            <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
+                                Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? '\nRSSI Value: ' + device.rssi : ''}`, [
                                     {
                                       text: 'Ok',
                                       onPress: () => {},
                                     }
                                 ]);
                             }}>
-                                <Image key={device.id} source={require('../../assets/images/beaconPointer.gif')} style={styles.bp_img}
+                                <Image source={require('../../assets/images/beaconPointer.gif')} style={styles.bp_img} tintColor={device.notLoaded ? 'lightgrey' : ''}
                                 ></Image>
                             </TouchableOpacity>
                         )
                     }else{
                         assets.push(
-                            <TouchableOpacity style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                Alert.alert(device.name, device.id, [
+                            <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
+                                Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? '\nRSSI Value: ' + device.rssi : ''}`, [
                                     {
                                       text: 'Ok',
                                       onPress: () => {},
                                     }
                                 ]);
                             }} >
-                                <Image key={device.id} source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img}></Image>
+                                <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={device.notLoaded ? 'lightgrey' : ''}></Image>
                             </TouchableOpacity>
                         )
                     }

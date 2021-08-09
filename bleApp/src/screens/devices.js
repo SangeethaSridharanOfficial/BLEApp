@@ -11,6 +11,8 @@ import Header from './header';
 import Device from '../components/devices/index';
 import Modal from 'react-native-modal';
 import axiosInstance from '../utils/axiosInstance';
+import { validateXYCoords } from '../utils/helper';
+import { DEVICES } from '../constants/routeNames';
 
 const Devices = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -41,23 +43,33 @@ const Devices = () => {
             headerStyle: {
                 backgroundColor: '#ccccf8'
             },
-            headerTitle: () => <Header toggleDrawer={toggleDrawer} data={data}/>
+            headerTitle: () => <Header toggleDrawer={toggleDrawer} data={data} activePage={DEVICES}/>
         });
+        if(devices.length){
+            setIsLoading(true);
+        }
+        
     }, [])
 
     useEffect(() => {
         renderDevices();
     }, [devices.length]);
 
+    useEffect(() => {
+        if(scannedDevices && scannedDevices.length){
+            if(isLoading) setIsLoading(false);
+        }
+    }, [scannedDevices])
+
     const addCoordinates = (deviceType) => {
         try{
-            if(xCoordsVal && yCoordsVal){
+            if(validateXYCoords(xCoordsVal, yCoordsVal)){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
                 devicesAction({cordinatesVal, currentDevice, dType: deviceType}, 'SET_COORDS')(deviceDispatch);
                 devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
                 handleDevice('ADD', deviceType, cordinatesVal, currentDevice);
             }else{
-                Alert.alert('Error!!!', 'Please enter both X and Y coordinates to proceed', [
+                Alert.alert('Error!!!', 'Please enter both X and Y coordinates properly to proceed', [
                     {
                       text: 'Ok',
                       onPress: () => {},
@@ -111,9 +123,19 @@ const Devices = () => {
     const renderDevices = () => {
         try{
             let resultedDevices = [];
+            let isDeviceScanned = false;
             axiosInstance.get('/ble/allTags').then((resp) => {
                 if(devices.length){
                     devices.forEach(device => {
+                        if(device.isScanned) isDeviceScanned = true;
+                        // if(device.isScanned){
+                        //     console.log('device', device.rssi);
+                        //     manager.connectToDevice(device.id).then(data => {
+                        //         console.log(data);
+                        //     }).catch(err => {
+                        //         console.log(err);
+                        //     })
+                        // }
                         let count = 0;
                         resp.data.data.forEach(data => {
                             if(data._id === device.id){
@@ -131,8 +153,18 @@ const Devices = () => {
                             count--;
                         }
                     });
+                }else{
+                    isDeviceScanned = true;
                 }
                 setScannedDevices(resultedDevices);
+                if(!isDeviceScanned){
+                    Alert.alert('Previously added devices are listed', 'Please scan to get a new devices nearby', [
+                        {
+                          text: 'Ok',
+                          onPress: () => {},
+                        }
+                    ]);
+                }
             }).catch((err) => {
                 console.error('Error ', err);
             })
@@ -145,7 +177,7 @@ const Devices = () => {
         const permission = await requestLocationPermission();
         if(permission){
             devicesAction(true, 'SCANNING')(deviceDispatch);
-            setIsLoading(true)
+            setIsLoading(true);
     
           // scan devices
           manager.startDeviceScan(null, null, (error, scannedDevice) => {
@@ -156,6 +188,7 @@ const Devices = () => {
             // if a device is detected add the device to the list by dispatching the action into the reducer
             if (scannedDevice) {
                 console.log('Scanned Dev ', scannedDevice.id);
+                scannedDevice['isScanned'] = true;
                 devicesAction(scannedDevice, 'DEVICES')(deviceDispatch);
             }
           });
@@ -193,7 +226,7 @@ const Devices = () => {
                     title="Scan devices"
                     onPress={() => {
                         // devicesAction('', 'CLEAR')(deviceDispatch);
-                        if(!isScanning){
+                        if(!isScanning && !isLoading){
                             scanDevices();
                         }
                     }}

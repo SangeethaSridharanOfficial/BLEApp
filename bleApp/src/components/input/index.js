@@ -6,10 +6,6 @@ import styles from './styles';
 const Input = ({onChangeText, securedTextEntry, icon, iconPosition, style, value, label, error, ...props}) => {
     const [isFocused, setIsFocused] = useState(false);
 
-    useEffect(() => {
-        console.log('came here ', securedTextEntry);
-    }, [])
-
     const getFlexPosition = () => {
         try{
             if(icon && iconPosition){

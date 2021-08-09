@@ -32,5 +32,14 @@ export default StyleSheet.create({
         position: 'absolute',
         width: 100,
         height: 100
+    },
+
+
+    loaderContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%'
     }
 })

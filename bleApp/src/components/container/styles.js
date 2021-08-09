@@ -57,6 +57,16 @@ export default StyleSheet.create({
         alignItems: 'center'
     },
 
+    pageNameCont: {
+        height: '100%',
+        padding: 10
+    },
+
+    pageName: {
+        fontSize: 20,
+        fontWeight: 'bold'
+    },
+
     sideWrapper: {
         width: '100%',
         height: '100%',
@@ -65,7 +75,8 @@ export default StyleSheet.create({
 
     textStyle: {
         fontSize: 20,
-        color: '#5050f0'
+        // color: '#5050f0'
+        color: 'black'
     },
 
     smOpts : {

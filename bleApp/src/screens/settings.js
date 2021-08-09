@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import Header from './header';
 import {useNavigation} from '@react-navigation/native';
 import { GlobalContext } from '../context/Provider';
+import { SETTINGS } from '../constants/routeNames';
 
 const Settings = () => {
     const {setOptions, toggleDrawer} = useNavigation();
@@ -13,7 +14,7 @@ const Settings = () => {
             headerStyle: {
                 backgroundColor: '#ccccf8'
             },
-            headerTitle: () => <Header toggleDrawer={toggleDrawer} data={data}/>
+            headerTitle: () => <Header toggleDrawer={toggleDrawer} data={data} activePage={SETTINGS}/>
         });
     }, [])
 

@@ -5,6 +5,12 @@ const deviceReducer = (state, {type, payload}) => {
             const {id} = payload;
             if(!state.devices.length || (state.devices.length && !state.devices.find(dev => dev.id === id))){
                 state.devices.push(payload);
+            }else if (state.devices.length && state.devices.find(dev => dev.id === id)){
+                state.devices.forEach((device, idx) => {
+                    if(device.id === payload.id && device.notLoaded){
+                        state.devices[idx] = payload;
+                    }
+                })
             }
             return {...state};
 
