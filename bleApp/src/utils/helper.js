@@ -14,6 +14,29 @@ const validateXYCoords = (x, y) => {
     }
 }
 
+const scanningDevices = (deviceDispatch, devicesAction, manager) =>{
+
+    // scan devices
+    manager.startDeviceScan(null, null, (error, scannedDevice) => {
+        if (error) {
+            console.warn(error);
+        }
+
+        // if a device is detected add the device to the list by dispatching the action into the reducer
+        if (scannedDevice) {
+            console.log('Scanned Dev ', scannedDevice.id);
+            scannedDevice['isScanned'] = true;
+            devicesAction(scannedDevice, 'DEVICES')(deviceDispatch);
+        }
+    });
+
+    // stop scanning devices after 5 seconds
+    setTimeout(() => {
+        manager.stopDeviceScan();
+    }, 5000);
+};
+
 export {
-    validateXYCoords
+    validateXYCoords,
+    scanningDevices
 }

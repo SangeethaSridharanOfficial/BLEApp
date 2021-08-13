@@ -11,7 +11,7 @@ import Header from './header';
 import Device from '../components/devices/index';
 import Modal from 'react-native-modal';
 import axiosInstance from '../utils/axiosInstance';
-import { validateXYCoords } from '../utils/helper';
+import { validateXYCoords, scanningDevices } from '../utils/helper';
 import { DEVICES } from '../constants/routeNames';
 
 const Devices = () => {
@@ -128,14 +128,24 @@ const Devices = () => {
                 if(devices.length){
                     devices.forEach(device => {
                         if(device.isScanned) isDeviceScanned = true;
-                        // if(device.isScanned){
-                        //     console.log('device', device.rssi);
-                        //     manager.connectToDevice(device.id).then(data => {
-                        //         console.log(data);
-                        //     }).catch(err => {
-                        //         console.log(err);
-                        //     })
-                        // }
+                        if(device.isScanned){
+                            console.log('device', device.rssi);
+                            // // device.connect()
+                            // // .then((device) => {
+                            // //     console.log('discovered: ', device.discoverAllServicesAndCharacteristics());
+                            // // })
+                            // // .then((device) => {
+                            // // // Do work on device with services and characteristics
+                            // // })
+                            // .catch((error) => {
+                            //     console.log('Error while connecting ', error);
+                            // });
+                            manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
+                                console.log(data);
+                            }).catch(err => {
+                                console.log(err);
+                            })
+                        }
                         let count = 0;
                         resp.data.data.forEach(data => {
                             if(data._id === device.id){
@@ -178,27 +188,12 @@ const Devices = () => {
         if(permission){
             devicesAction(true, 'SCANNING')(deviceDispatch);
             setIsLoading(true);
-    
-          // scan devices
-          manager.startDeviceScan(null, null, (error, scannedDevice) => {
-            if (error) {
-              console.warn(error);
-            }
-    
-            // if a device is detected add the device to the list by dispatching the action into the reducer
-            if (scannedDevice) {
-                console.log('Scanned Dev ', scannedDevice.id);
-                scannedDevice['isScanned'] = true;
-                devicesAction(scannedDevice, 'DEVICES')(deviceDispatch);
-            }
-          });
-    
-          // stop scanning devices after 5 seconds
-          setTimeout(() => {
-            manager.stopDeviceScan();
-            devicesAction(false, 'SCANNING')(deviceDispatch);
-            setIsLoading(false);
-          }, 5000);
+            scanningDevices(deviceDispatch, devicesAction, manager);
+            setTimeout(() => {
+                manager.stopDeviceScan();
+                devicesAction(false, 'SCANNING')(deviceDispatch);
+                setIsLoading(false);
+            }, 5000);
         }
     };
 
@@ -238,7 +233,7 @@ const Devices = () => {
                 }
             </View>
             
-            <ScrollView>
+            <ScrollView style={styles.deviceList}>
                 {devices.length != 0 && <View>{scannedDevices}</View>}
             </ScrollView>
             <Modal isVisible={isModalVisible}>

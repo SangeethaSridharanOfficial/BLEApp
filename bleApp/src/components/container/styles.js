@@ -110,6 +110,10 @@ export default StyleSheet.create({
         borderRadius: 150
     },
 
+    deviceList: {
+        height: '90%'
+    },
+
     // add new tag styles - START
     addTagView: {
         backgroundColor: '#eaeaea',

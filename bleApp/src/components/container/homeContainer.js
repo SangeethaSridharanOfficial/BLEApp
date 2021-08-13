@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import styles from './styles';
 
-const HomeContainer = ({isLoggedIn, style, children}) => {
+const HomeContainer = ({style, children}) => {
     return (
         <View>{children}</View>
     )
