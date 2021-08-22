@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react';
 import { BleManager } from 'react-native-ble-plx';
 import { requestLocationPermission } from '../utils/permission';
-import { Alert, View, ActivityIndicator, Button, ScrollView, TextInput, Text, TouchableOpacity } from 'react-native';
+import { Alert, View, ActivityIndicator, Button, ScrollView } from 'react-native';
 import { GlobalContext } from '../context/Provider';
 import devicesAction from '../context/actions/devicesAction';
 import styles from '../components/container/styles';
@@ -9,28 +9,20 @@ import DeviceContainer from '../components/container/deviceContainer';
 import {useNavigation} from '@react-navigation/native';
 import Header from './header';
 import Device from '../components/devices/index';
-import Modal from 'react-native-modal';
 import axiosInstance from '../utils/axiosInstance';
 import { validateXYCoords, scanningDevices } from '../utils/helper';
 import { DEVICES } from '../constants/routeNames';
+import AddTag from '../components/addTag';
+import Modal from 'react-native-modal';
 
 const Devices = () => {
     const [isLoading, setIsLoading] = useState(false);
     const manager = new BleManager();
     const { deviceDispatch, deviceState: {devices, isScanning}, authDispatch, authState: {isLoggedIn, data} } = useContext(GlobalContext);
     const {setOptions, toggleDrawer} = useNavigation();
-    const [xCoordsVal, setXCoordsVal] = useState('');
-    const [yCoordsVal, setYCoordsVal] = useState('');
-    const [isModalVisible, setModalVisible] = useState(false);
     const [currentDevice, setCurrentDevice] = useState(null);
     const [scannedDevices, setScannedDevices] = useState(null);
-
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-        setXCoordsVal('');
-        setYCoordsVal('');
-    };
-   
+    const [isModalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         const subscription = manager.onStateChange(state => {
@@ -61,7 +53,7 @@ const Devices = () => {
         }
     }, [scannedDevices])
 
-    const addCoordinates = (deviceType) => {
+    const addCoordinates = (deviceType, xCoordsVal, yCoordsVal) => {
         try{
             if(validateXYCoords(xCoordsVal, yCoordsVal)){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
@@ -124,12 +116,11 @@ const Devices = () => {
         try{
             let resultedDevices = [];
             let isDeviceScanned = false;
-            axiosInstance.get('/ble/allTags').then((resp) => {
+            // axiosInstance.get('/ble/allTags').then((resp) => {
                 if(devices.length){
                     devices.forEach(device => {
                         if(device.isScanned) isDeviceScanned = true;
-                        if(device.isScanned){
-                            console.log('device', device.rssi);
+                        // if(device.isScanned){
                             // // device.connect()
                             // // .then((device) => {
                             // //     console.log('discovered: ', device.discoverAllServicesAndCharacteristics());
@@ -140,27 +131,30 @@ const Devices = () => {
                             // .catch((error) => {
                             //     console.log('Error while connecting ', error);
                             // });
-                            manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
-                                console.log(data);
-                            }).catch(err => {
-                                console.log(err);
-                            })
+                            // manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
+                            //     console.log(data);
+                            // }).catch(err => {
+                            //     console.log(err);
+                            // })
+                        // }
+                        // let count = 0;
+                        // resp.data.data.forEach(data => {
+                        //     if(data._id === device.id){
+                        if(device.coords){ 
+                            devicesAction({cordinatesVal: device.coords, dType: device.dType, currentDevice: device}, 'SET_COORDS')(deviceDispatch);
+                            resultedDevices.push(
+                                <Device key={device.id} device={device} handleToggle={handleToggle} isAdded={true} initCoords={device.coords}/>
+                            )
                         }
-                        let count = 0;
-                        resp.data.data.forEach(data => {
-                            if(data._id === device.id){
-                                if(data.coords) devicesAction({cordinatesVal: data.coords, dType: data.dType, currentDevice: device}, 'SET_COORDS')(deviceDispatch);
-                                resultedDevices.push(
-                                    <Device key={device.id} device={device} handleToggle={handleToggle} isAdded={true} initCoords={data.coords}/>
-                                )
-                                count++;
-                            }
-                        })
-                        if(!count){
+                        //         count++;
+                        //     }
+                        // })
+                        // if(!count){
+                        else{
                             resultedDevices.push(
                                 <Device key={device.id} device={device} handleToggle={handleToggle}/>
                             )
-                            count--;
+                            // count--;
                         }
                     });
                 }else{
@@ -175,9 +169,9 @@ const Devices = () => {
                         }
                     ]);
                 }
-            }).catch((err) => {
-                console.error('Error ', err);
-            })
+            // }).catch((err) => {
+            //     console.error('Error ', err);
+            // })
         }catch(err){
             console.error('Error in renderDevices ', err.stack);
         }
@@ -190,12 +184,16 @@ const Devices = () => {
             setIsLoading(true);
             scanningDevices(deviceDispatch, devicesAction, manager);
             setTimeout(() => {
-                manager.stopDeviceScan();
+                // manager.stopDeviceScan();
                 devicesAction(false, 'SCANNING')(deviceDispatch);
                 setIsLoading(false);
             }, 5000);
         }
     };
+
+    const toggleModal = () => {
+        setModalVisible(!isModalVisible);
+    }
 
     return (
         <DeviceContainer isLoggedIn={isLoggedIn}>
@@ -237,62 +235,9 @@ const Devices = () => {
                 {devices.length != 0 && <View>{scannedDevices}</View>}
             </ScrollView>
             <Modal isVisible={isModalVisible}>
-                <View style={styles.addTagView}>
-                    <View style={styles.at_header}>
-                        <Text style={styles.at_he_text}>Add New Tags</Text>
-                    </View>
-                    <View style={styles.at_co_wrapper}>
-                        <View style={styles.at_co_cont}>
-                            <View style={styles.at_co_txt}>
-                                <Text style={styles.at_txt}>X: </Text>
-                            </View>
-                            <TextInput style={styles.at_ipt} onChangeText={(text) => {
-                                setXCoordsVal(text);
-                            }} 
-                            value={xCoordsVal}></TextInput>
-                        </View>
-                        <View style={styles.at_co_cont}>
-                            <View style={styles.at_co_txt}>
-                                <Text style={styles.at_txt}>Y: </Text>
-                            </View>
-                            <TextInput style={styles.at_ipt} onChangeText={(text) => {
-                                setYCoordsVal(text);
-                            }} 
-                            value={yCoordsVal}></TextInput>
-                        </View>
-                    </View>
-                    <View style={styles.tagBtns_wrapper}>
-                        <TouchableOpacity style={styles.at_btn} onPress={() => {
-                            addCoordinates('beacon');
-                            toggleModal();
-                        }}>
-                            <Text style={styles.at_btn_txt}>Beacon</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.at_btn} onPress={() => {
-                            addCoordinates('asset');
-                            toggleModal();
-                        }}>
-                            <Text style={styles.at_btn_txt}>Asset</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.at_cancel_btn_wrp}>
-                        <TouchableOpacity style={styles.at_cancel_btn} onPress={() => {
-                            toggleModal();
-                        }}>
-                            <Text style={styles.at_cancel_btn_txt}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {/* <TextInput style={styles.coordsIpt}
-                        onChangeText={(text) => {
-                            setCordinatesVal(text);
-                        }} 
-                        value={cordinatesVal}
-                    ></TextInput>
-                    <Button title="Cancel" onPress={() => {
-                        toggleModal();
-                    }} /> */}
-                </View>
+                <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal}/>
             </Modal>
+            
         </DeviceContainer> 
     )
 };

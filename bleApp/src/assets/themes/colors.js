@@ -7,5 +7,8 @@ export default {
     grey: '#adb5bd',
     white: '#ffffff',
     black: 'black',
-    header: '#ccccf8'
+    header: '#ccccf8',
+    asset: '#8c2be6',
+    beacon: '#548df4',
+    mobile: '#047f7f'
 };

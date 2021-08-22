@@ -14,7 +14,7 @@ const Home = () => {
     const {setOptions, toggleDrawer} = useNavigation();
     const { authState: {data} } = useContext(GlobalContext);
     const [isDeviceLoaded, setIsDeviceLoaded] = useState(false);
-    const { deviceDispatch, deviceState } = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {activeState}} = useContext(GlobalContext);
 
     useEffect(() => {
         setOptions({
@@ -34,12 +34,12 @@ const Home = () => {
                 setIsDeviceLoaded(true);
             }
         }).catch(err => {
-            setIsDeviceLoaded(true);
+            setIsDeviceLoaded(false);
         })
     }, [])
 
     return(<HomeContainer>
-        {isDeviceLoaded ? 
+        {isDeviceLoaded && activeState === HOME? 
         <Map/> : 
         <View style={styles.loaderContainer}>
             <ActivityIndicator color={'teal'} size={25} />

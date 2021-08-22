@@ -8,6 +8,10 @@ const deviceReducer = (state, {type, payload}) => {
             }else if (state.devices.length && state.devices.find(dev => dev.id === id)){
                 state.devices.forEach((device, idx) => {
                     if(device.id === payload.id && device.notLoaded){
+                        if(state.devices[idx]['coords']){
+                            payload['coords'] = state.devices[idx]['coords'];
+                            payload['dType'] = state.devices[idx]['dType'];
+                        }
                         state.devices[idx] = payload;
                     }
                 })
@@ -55,6 +59,10 @@ const deviceReducer = (state, {type, payload}) => {
 
         case 'REMOVE_DEVICE':
             state.devices = state.devices.filter(dev => dev.id !== payload.id);
+            return {...state};
+
+        case 'ACTIVE_STATE':
+            state.activeState = payload;
             return {...state};
 
         default:

@@ -6,9 +6,10 @@ import { GlobalContext } from '../context/Provider';
 import SMContainer from '../components/container/smContainer';
 import styles from '../components/container/styles';
 import colors from '../assets/themes/colors';
+import devicesAction from '../context/actions/devicesAction';
 
 const SideMenu = ({ navigation }) => {
-    const { authDispatch, authState: {isLoggedIn, data} } = useContext(GlobalContext);
+    const { authDispatch, authState: {isLoggedIn, data}, deviceDispatch } = useContext(GlobalContext);
     const [activeState, setActiveState] = useState(HOME);
 
     return(
@@ -17,24 +18,28 @@ const SideMenu = ({ navigation }) => {
                 <TouchableOpacity style={[styles.homeOpt, styles.smOpts, {backgroundColor: `${activeState === HOME ? '#f2f2f2' : 'white'}`}]}  onPress={() => {
                   navigation.navigate(HOME);
                   setActiveState(HOME);
+                  devicesAction(HOME, 'ACTIVE_STATE')(deviceDispatch);
                 }}>
                   <Text style={[styles.textStyle, {color: `${activeState === HOME ? colors.accent : colors.black}`}]}>{HOME}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.devicesOpt, styles.smOpts, {backgroundColor: `${activeState === DEVICES ? '#f2f2f2' : 'white'}`}]} onPress={() => {
                   navigation.navigate(DEVICES);
                   setActiveState(DEVICES);
+                  devicesAction(DEVICES, 'ACTIVE_STATE')(deviceDispatch);
                 }}>
                   <Text style={[styles.textStyle, {color: `${activeState === DEVICES ? colors.accent : colors.black}`}]}>{DEVICES}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.profileOpt, styles.smOpts, {backgroundColor: `${activeState === PROFILE ? '#f2f2f2' : 'white'}`}]} onPress={() => {
                   navigation.navigate(PROFILE);
                   setActiveState(PROFILE);
+                  devicesAction(PROFILE, 'ACTIVE_STATE')(deviceDispatch);
                 }}>
                   <Text style={[styles.textStyle, {color: `${activeState === PROFILE ? colors.accent : colors.black}`}]}>{PROFILE}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.settingsOpt, styles.smOpts, {backgroundColor: `${activeState === SETTINGS ? '#f2f2f2' : 'white'}`}]} onPress={() => {
                   navigation.navigate(SETTINGS);
                   setActiveState(SETTINGS);
+                  devicesAction(SETTINGS, 'ACTIVE_STATE')(deviceDispatch);
                 }}>
                   <Text style={[styles.textStyle, {color: `${activeState === SETTINGS ? colors.accent : colors.black}`}]}>{SETTINGS}</Text>
                 </TouchableOpacity>

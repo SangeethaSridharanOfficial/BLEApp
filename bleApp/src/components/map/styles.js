@@ -29,9 +29,9 @@ export default StyleSheet.create({
         height: 150
     },
     bp_img: {
-        position: 'absolute',
-        width: 100,
-        height: 100
+        // position: 'absolute',
+        width: 150,
+        height: 150
     },
 
 
