@@ -9,11 +9,14 @@ import 'react-native-gesture-handler';
 import React from 'react';
 import AppNavigation from './src/navigations';
 import GlobalProvider from './src/context/Provider';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const App = () => {
-  return <GlobalProvider>
-    <AppNavigation/>
-  </GlobalProvider>
+  return <SafeAreaProvider> 
+    <GlobalProvider>
+      <AppNavigation/>
+    </GlobalProvider>
+  </SafeAreaProvider>;
 };
 
 export default App;

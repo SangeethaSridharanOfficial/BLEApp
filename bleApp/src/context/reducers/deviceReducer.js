@@ -44,6 +44,7 @@ const deviceReducer = (state, {type, payload}) => {
                     if(device.id === payload.currentDevice.id){
                         device['coords'] = payload.cordinatesVal;
                         device['dType'] = payload.dType;
+                        device['specialDevice'] = payload.addForMobile
                     }
                 });
             }

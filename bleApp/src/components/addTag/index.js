@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {View, TextInput, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
-import CheckBox from '@react-native-community/checkbox';
+import {CheckBox} from 'react-native-elements';
 
 const AddTag = ({toggleModal, addCoordinates}) => {
     const [xCoordsVal, setXCoordsVal] = useState('');
@@ -41,13 +41,13 @@ const AddTag = ({toggleModal, addCoordinates}) => {
             </View>
             <View style={styles.tagBtns_wrapper}>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    addCoordinates('beacon', xCoordsVal, yCoordsVal);
+                    addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
                     resetValues();
                 }}>
                     <Text style={styles.at_btn_txt}>Beacon</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    addCoordinates('asset', xCoordsVal, yCoordsVal);
+                    addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
                     resetValues();
                 }}>
                     <Text style={styles.at_btn_txt}>Asset</Text>
@@ -55,11 +55,13 @@ const AddTag = ({toggleModal, addCoordinates}) => {
             </View>
             <View style={styles.checkboxContainer}>
                 <CheckBox
-                    value={isSelected}
-                    onValueChange={setSelection}
-                    style={styles.tag_chkbx}
+                    checked={isSelected}
+                    title = 'Do you need to add this device for mobile calculation?'
+                    // checkedIcon='dot-circle-o'
+                    // uncheckedIcon='circle-o'
+                    onPress={() => {setSelection(!isSelected)}}
+                    // style={styles.tag_chkbx}
                 />
-                <Text>Do you need to add this device for mobile calculation?</Text>
             </View>
             <View style={styles.at_cancel_btn_wrp}>
                 <TouchableOpacity style={styles.at_cancel_btn} onPress={() => {

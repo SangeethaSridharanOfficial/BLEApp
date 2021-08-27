@@ -14,10 +14,18 @@ const validateXYCoords = (x, y) => {
     }
 }
 
-const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc) =>{
+const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc, delay) => {
+
+    // stop scanning devices after 5 seconds
+    var timer = setTimeout(() => {
+        manager.stopDeviceScan();
+        manager.destroy();
+        if(callbackFunc) callbackFunc();
+        clearTimeout(timer);
+    }, delay);
 
     // scan devices
-    manager.startDeviceScan(null, {allowDuplicates: false}, (error, scannedDevice) => {
+    manager.startDeviceScan(null, null, (error, scannedDevice) => {
         if (error) {
             console.warn(error);
         }
@@ -29,13 +37,7 @@ const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc) =
             devicesAction(scannedDevice, 'DEVICES')(deviceDispatch);
         }
     });
-
-    // stop scanning devices after 5 seconds
-    setTimeout(() => {
-        manager.stopDeviceScan();
-        manager.destroy();
-        if(callbackFunc) callbackFunc();
-    }, 5000);
+    
 };
 
 export {

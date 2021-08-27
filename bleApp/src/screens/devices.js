@@ -53,13 +53,13 @@ const Devices = () => {
         }
     }, [scannedDevices])
 
-    const addCoordinates = (deviceType, xCoordsVal, yCoordsVal) => {
+    const addCoordinates = (deviceType, xCoordsVal, yCoordsVal, addForMobile) => {
         try{
             if(validateXYCoords(xCoordsVal, yCoordsVal)){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
-                devicesAction({cordinatesVal, currentDevice, dType: deviceType}, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal, currentDevice, dType: deviceType, addForMobile}, 'SET_COORDS')(deviceDispatch);
                 devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
-                handleDevice('ADD', deviceType, cordinatesVal, currentDevice);
+                handleDevice('ADD', deviceType, cordinatesVal, currentDevice, addForMobile);
             }else{
                 Alert.alert('Error!!!', 'Please enter both X and Y coordinates properly to proceed', [
                     {
@@ -73,13 +73,14 @@ const Devices = () => {
         }
     }
 
-    const handleDevice = (async (type, dType, cordinatesVal, cDevice) => {
+    const handleDevice = (async (type, dType, cordinatesVal, cDevice, addForMobile) => {
         try{
             devicesAction(cDevice, type)(deviceDispatch);
             let reqObj = {
                 toAdd: type === 'ADD',
                 dId: cDevice.id,
-                dType
+                dType,
+                isSpecialDevice: addForMobile
             };
             if(type === 'ADD'){
                 reqObj['dName'] = cDevice.name;
@@ -102,7 +103,7 @@ const Devices = () => {
             else {
                 devices.forEach(d => {
                     if(d.id === device.id){
-                        handleDevice('REMOVE', d.dType, null, device);
+                        handleDevice('REMOVE', d.dType, null, device, false);
                     }
                 })
                 
@@ -182,11 +183,11 @@ const Devices = () => {
         if(permission){
             devicesAction(true, 'SCANNING')(deviceDispatch);
             setIsLoading(true);
-            scanningDevices(deviceDispatch, devicesAction, manager);
-            setTimeout(() => {
-                // manager.stopDeviceScan();
+            scanningDevices(deviceDispatch, devicesAction, manager, null, 5000);
+            let timeoutDev = setTimeout(() => {
                 devicesAction(false, 'SCANNING')(deviceDispatch);
                 setIsLoading(false);
+                clearTimeout(timeoutDev);
             }, 5000);
         }
     };
