@@ -15,6 +15,12 @@ const authReducer = (state, {type, payload}) => {
                 isLoggedIn: false
             }
 
+        case 'FIRST_LOAD':
+            return {
+                ...state,
+                firstLoad: false
+            }
+
         default:
             return state;
     }

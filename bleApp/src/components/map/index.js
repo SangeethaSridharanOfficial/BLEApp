@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, ActivityIndicator, TouchableOpacity, Image, Alert } from 'react-native';
 import { GlobalContext } from '../../context/Provider';
 import styles from './styles';
 import devicesAction from '../../context/actions/devicesAction';
@@ -7,20 +7,27 @@ import { BleManager } from 'react-native-ble-plx';
 import { scanningDevices } from '../../utils/helper';
 import { requestLocationPermission } from '../../utils/permission';
 import colors from '../../assets/themes/colors';
+import loginAction from '../../context/actions/loginAction';
 const manager = new BleManager();
 
 const Map = () => {
-    const { deviceDispatch, deviceState: {devices} } = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
     let timer;
 
     useEffect(() => {
-        const subscription = manager.onStateChange(state => {
-            if (state === "PoweredOn") {
-              subscription.remove();
-              scanDevices();
-            }
-        }, true);
+        if(firstLoad){
+            loginAction('FIRST_LOAD')(authDispatch);
+            const subscription = manager.onStateChange(state => {
+                if (state === "PoweredOn") {
+                  subscription.remove();
+                  scanDevices();
+                }
+            }, true);
+        }else{
+            renderAssets();
+        }
+        
         console.log('Map Mounted')
         
         return () => {
@@ -185,9 +192,12 @@ const Map = () => {
 
     return(
         <View style={styles.mapContainer}>
-            <View style={styles.mapHolder}>
+            {loadDevices ? <View style={styles.mapHolder}>
                 {loadDevices}
-            </View>
+            </View> : 
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator color={'teal'} size={25} />
+            </View>}
         </View>
     )
 }

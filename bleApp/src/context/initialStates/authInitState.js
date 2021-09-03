@@ -4,5 +4,6 @@ export default {
         userName: 'Test'
     },
     error: null,
-    loading: false
+    loading: false,
+    firstLoad: true
 }

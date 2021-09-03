@@ -1,5 +1,5 @@
 export default (type, payload) => dispatch => {
-    if(type === 'LOGOUT'){
+    if(type === 'LOGOUT' || type === 'FIRST_LOAD'){
         dispatch({
             type
         })

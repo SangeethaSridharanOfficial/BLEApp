@@ -5,7 +5,7 @@ import envs from '../config/env';
 let headers = {};
 
 const axiosInstance = axios.create({
-  baseURL: 'http://192.168.56.1:4000', //envs.BACKEND_URL,
+  baseURL: 'https://bleapp-backend.herokuapp.com', //envs.BACKEND_URL,
   headers,
 });
 
