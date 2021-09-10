@@ -8,10 +8,14 @@ const deviceReducer = (state, {type, payload}) => {
             }else if (state.devices.length && state.devices.find(dev => dev.id === id)){
                 state.devices.forEach((device, idx) => {
                     if(device.id === payload.id && device.notLoaded){
+                        payload['specialDevice'] = payload['isSpecialDevice'];
                         if(state.devices[idx]['coords']){
                             payload['coords'] = state.devices[idx]['coords'];
                             payload['dType'] = state.devices[idx]['dType'];
                         }
+                        state.devices[idx] = payload;
+                    }else if(device.id === payload.id){
+                        payload['specialDevice'] = payload['isSpecialDevice'];
                         state.devices[idx] = payload;
                     }
                 })

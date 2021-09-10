@@ -68,22 +68,7 @@ export default StyleSheet.create({
 
     sideWrapper: {
         width: '100%',
-        height: '100%',
-        marginTop: 70
-    },
-
-    textStyle: {
-        fontSize: 20,
-        // color: '#5050f0'
-        color: 'black'
-    },
-
-    smOpts : {
-        paddingVertical: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8f8f8'
+        height: '100%'
     },
 
     profileWrapper: {
@@ -111,5 +96,47 @@ export default StyleSheet.create({
 
     deviceList: {
         height: '90%'
+    },
+
+    // Side Menu - START
+    textStyle: {
+        fontSize: 20,
+        // color: '#5050f0'
+        color: 'black'
+    },
+
+    smOpts : {
+        paddingVertical: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        // justifyContent: 'center',
+        backgroundColor: '#f8f8f8',
+        paddingLeft: 20
+    },
+
+    sm_top: {
+        // backgroundColor: colors.accent,
+        marginTop: 10,
+        marginBottom: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignContent: 'center'
+    },
+
+    sm_icons: {
+        color: 'gray'
+    },
+
+    sm_icon_holder:{
+        width: 50,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    hori_line: {
+        backgroundColor: 'lightgrey',
+        height: 1
     }
+
+    // Side Menu - END
 })

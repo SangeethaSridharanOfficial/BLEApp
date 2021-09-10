@@ -66,8 +66,8 @@ const Map = () => {
             E = 2*y3 - 2*y2,
             F = r2**2 - r3**2 - x2**2 + x3**2 - y2**2 + y3**2;
             
-            let x = round((C*E - F*B) / (E*A - B*D), 3),
-            y = round((C*D - A*F) / (B*D - A*E), 3);
+            let x = Math.round((C*E - F*B) / (E*A - B*D), 3),
+            y = Math.round((C*D - A*F) / (B*D - A*E), 3);
             console.log("r2 in TrackDevice: ", r2)
 
             // x = 0
@@ -76,12 +76,13 @@ const Map = () => {
             // print(x1,y1,x2,y2,x3,y3)
             return {x, y}
         }catch(err){
-            console.error('Error in trackMobileDevice ', err.stack);
+            console.error('Error in trackMobileDevice ', err);
         }
     }
 
     const calcDistance = (rssi) => {
         try{
+            if(!rssi) rssi = 0;
             let txpower = -77,
             n=2,
             delta = parseFloat(txpower - rssi)/(10*n);
@@ -180,13 +181,13 @@ const Map = () => {
                         //     }
                         // ]);
                     }} >
-                        <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={device.notLoaded ? 'lightgrey' : colors.mobile}></Image>
+                        <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={colors.mobile}></Image>
                     </TouchableOpacity>
                 )
             }
             setLoadDevices(assets);
         }catch(err){
-            console.error('Error in renderAssets ', err.stack);
+            console.error('Error in renderAssets ', err);
         }
     }
 
