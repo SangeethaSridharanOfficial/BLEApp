@@ -4,7 +4,7 @@ import { PermissionsAndroid } from 'react-native';
 export async function requestLocationPermission() {
     try {
       const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION, {
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
           title: 'Location permission for bluetooth scanning',
           message: 'wahtever',
           buttonNeutral: 'Ask Me Later',

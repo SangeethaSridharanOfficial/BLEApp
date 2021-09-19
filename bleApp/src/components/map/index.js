@@ -9,10 +9,12 @@ import { requestLocationPermission } from '../../utils/permission';
 import colors from '../../assets/themes/colors';
 import loginAction from '../../context/actions/loginAction';
 const manager = new BleManager();
+import axiosInstance from '../../utils/axiosInstance';
 
 const Map = () => {
     const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
+    const [dataLoading, setDataLoading] = useState(false);
     let timer;
 
     useEffect(() => {
@@ -85,13 +87,27 @@ const Map = () => {
             if(!rssi) rssi = 0;
             let txpower = -77,
             n=2,
-            delta = parseFloat(txpower - rssi)/(10*n);
-            dist = Math.pow(10, delta);
+            delta = parseFloat(txpower - rssi)/(10*n),
+            dist = Math.pow(10, delta),
             distance = Number(dist.toFixed(2));
 
             return distance;
         }catch(err){
-            console.error('Error in calcDistance ', err.stack);
+            console.error('Error in calcDistance ', err);
+        }
+    }
+
+    const fetchLatestTagData = (id) => {
+        try{
+            return new Promise((resolve, reject) => {
+                axiosInstance.get(`/azure/LatestItem?id=${id}`).then(resp => {
+                    return resolve(resp.data);
+                }).catch(err => {
+                    return reject(err);
+                }) 
+            });
+        }catch(err){
+            console.error('Error in fetchLatestTagData ', err);
         }
     }
 
@@ -101,11 +117,24 @@ const Map = () => {
             let specialDevices = [];
             devices.forEach(device => {
                 if(device.coords){
-                    if(device.specialDevice){
+                    if(device.isSpecialDevice){
                         specialDevices.push(device);
                     }
                     let coordsArr = device.coords.split(' ');
                     if(device.dType === 'beacon'){
+                        // if(device.isScanned){
+                        //     manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
+                        //         console.log(data);
+                        //         manager.readRSSIForDevice(device.id).then((resp) => {
+                        //             console.log('RSSI: ', resp);
+                        //         }).catch((err) => {
+                        //             console.log('Error: ', err);
+                        //         })  
+                        //     }).catch(err => {
+                        //         console.log('Error connecting: ', err);
+                        //     })
+                              
+                        // }
                         // const interval = setInterval(async() => {
                             // if(device.isScanned){
                             //     manager.readRSSIForDevice(device.id).then((resp) => {
@@ -118,16 +147,26 @@ const Map = () => {
                         // }, 2000);
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                let distance = 0;
-                                if(device.rssi){
-                                    distance = calcDistance(device.rssi);
-                                }
-                                Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance}` : ''}`, [
-                                    {
-                                      text: 'Ok',
-                                      onPress: () => {},
+                                if(dataLoading) return;
+                                setDataLoading(true);
+                                fetchLatestTagData(device.id).then(tagData => {
+                                    setDataLoading(false);
+                                    let {data} = tagData;
+                                    let distance = 0;
+                                    if(device.rssi){
+                                        distance = calcDistance(device.rssi);
                                     }
-                                ]);
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} \nTemperature: ${data.Temp}` : ''}`, [
+                                        {
+                                        text: 'Ok',
+                                        onPress: () => {},
+                                        }
+                                    ]);
+                                }).catch(err => {
+                                    setDataLoading(false);
+                                    console.log('ERROR ', err);
+                                });
+                                
                             }}>
                                 <Image source={require('../../assets/images/assetPointer.gif')} style={styles.bp_img} tintColor={device.notLoaded ? 'lightgrey' : colors.beacon}
                                 ></Image>
@@ -148,17 +187,27 @@ const Map = () => {
                         // }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                let distance = 0;
-                                if(device.rssi){
-                                    distance = calcDistance(device.rssi);
-                                }
-                                
-                                Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance}`  : ''}`, [
-                                    {
-                                      text: 'Ok',
-                                      onPress: () => {},
+                                if(dataLoading) return;
+                                setDataLoading(true);
+                                fetchLatestTagData(device.id).then(tagData => {
+                                    let {data} = tagData;
+                                    setDataLoading(false);
+                                    let distance = 0;
+                                    if(device.rssi){
+                                        distance = calcDistance(device.rssi);
                                     }
-                                ]);
+                                    
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} \nTemperature: ${data.Temp} \nClickNo: ${data.ClickNo}`  : ''}`, [
+                                        {
+                                        text: 'Ok',
+                                        onPress: () => {},
+                                        }
+                                    ]);
+                                }).catch(err => {
+                                    setDataLoading(false);
+                                    console.log('ERROR ', err);
+                                });
+                                
                             }} >
                                 <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={device.notLoaded ? 'lightgrey' : colors.asset}></Image>
                             </TouchableOpacity>
@@ -193,6 +242,9 @@ const Map = () => {
 
     return(
         <View style={styles.mapContainer}>
+            {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
+                <ActivityIndicator color={'teal'} size={35} />
+            </View> : null}
             {loadDevices ? <View style={styles.mapHolder}>
                 {loadDevices}
             </View> : 

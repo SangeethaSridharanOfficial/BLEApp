@@ -29,11 +29,13 @@ const Home = () => {
                 resp.data.data.forEach(data => {
                     data['notLoaded'] = true;
                     data['id'] = data._id;
-                    devicesAction(data, 'DEVICES')(deviceDispatch);
+                    devicesAction(data, 'STORED_DEVICES')(deviceDispatch);
                 })
                 setIsDeviceLoaded(true);
             }
+            setIsDeviceLoaded(true);
         }).catch(err => {
+            console.log('Error from api ', err);
             setIsDeviceLoaded(false);
         })
     }, [])

@@ -34,7 +34,7 @@ const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc, d
         if (scannedDevice) {
             console.log('Scanned Dev ', scannedDevice.id);
             scannedDevice['isScanned'] = true;
-            devicesAction(scannedDevice, 'DEVICES')(deviceDispatch);
+            devicesAction(scannedDevice, 'SCANNED_DEVICES')(deviceDispatch);
         }
     });
     
