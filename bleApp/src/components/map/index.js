@@ -156,7 +156,7 @@ const Map = () => {
                                     if(device.rssi){
                                         distance = calcDistance(device.rssi);
                                     }
-                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} \nTemperature: ${data.Temp}` : ''}`, [
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${data ? `\nTemperature: ${data.Temp}` : ''}` : ''}`, [
                                         {
                                         text: 'Ok',
                                         onPress: () => {},
@@ -197,7 +197,7 @@ const Map = () => {
                                         distance = calcDistance(device.rssi);
                                     }
                                     
-                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} \nTemperature: ${data.Temp} \nClickNo: ${data.ClickNo}`  : ''}`, [
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${data ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo}` : ''}`  : ''}`, [
                                         {
                                         text: 'Ok',
                                         onPress: () => {},
