@@ -23,6 +23,7 @@ const Devices = () => {
     const [currentDevice, setCurrentDevice] = useState(null);
     const [scannedDevices, setScannedDevices] = useState(null);
     const [isModalVisible, setModalVisible] = useState(false);
+    const [disableSpecialDevOpt, setDisableSpecialDevOpt] = useState(false);
 
     useEffect(() => {
         const subscription = manager.onStateChange(state => {
@@ -57,7 +58,7 @@ const Devices = () => {
         try{
             if(validateXYCoords(xCoordsVal, yCoordsVal)){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
-                devicesAction({cordinatesVal, currentDevice, dType: deviceType, addForMobile}, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal, currentDevice, dType: deviceType, isSpecialDevice : addForMobile}, 'SET_COORDS')(deviceDispatch);
                 devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
                 handleDevice('ADD', deviceType, cordinatesVal, currentDevice, addForMobile);
             }else{
@@ -85,6 +86,9 @@ const Devices = () => {
             if(type === 'ADD'){
                 reqObj['dName'] = cDevice.name;
                 reqObj['coords'] = cordinatesVal;
+                devicesAction({id: cDevice.id, isSpecialDevice: addForMobile}, 'SPECIAL_DEVICE')(deviceDispatch);
+            }else{
+                devicesAction({id: cDevice.id, isSpecialDevice: addForMobile}, 'SPECIAL_DEVICE')(deviceDispatch);
             }
             axiosInstance.post('/ble/BLETag', reqObj).then(() => {
                 console.log('Info Saved Successfully!!');
@@ -99,11 +103,24 @@ const Devices = () => {
     const handleToggle = (device, type) => {
         try{
             setCurrentDevice(device);
-            if(type === 'ADD') toggleModal();
+            if(type === 'ADD') {
+                let count = 0;
+                devices.forEach(d => {
+                    if(d.isSpecialDevice){
+                        count += 1;
+                    }
+                })
+                if(count === 3){
+                    setDisableSpecialDevOpt(true);
+                }else{
+                    setDisableSpecialDevOpt(false);
+                }
+                toggleModal();
+            }
             else {
                 devices.forEach(d => {
                     if(d.id === device.id){
-                        handleDevice('REMOVE', d.dType, null, device, false);
+                        handleDevice('REMOVE', device.dType, null, device, false);
                     }
                 })
                 
@@ -236,7 +253,7 @@ const Devices = () => {
                 {devices.length != 0 && <View>{scannedDevices}</View>}
             </ScrollView>
             <Modal isVisible={isModalVisible}>
-                <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal}/>
+                <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal} disableSpecialDevOpt={disableSpecialDevOpt}/>
             </Modal>
             
         </DeviceContainer> 

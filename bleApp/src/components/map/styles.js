@@ -33,7 +33,10 @@ export default StyleSheet.create({
         width: 150,
         height: 150
     },
-
+    mobile_img:{
+        width: 40,
+        height: 40
+    },
 
     loaderContainer: {
         flexDirection: 'row',

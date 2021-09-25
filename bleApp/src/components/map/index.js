@@ -117,7 +117,7 @@ const Map = () => {
             let specialDevices = [];
             devices.forEach(device => {
                 if(device.coords){
-                    if(device.isSpecialDevice){
+                    if(device.isSpecialDevice && specialDevices.length < 3){
                         specialDevices.push(device);
                     }
                     let coordsArr = device.coords.split(' ');
@@ -222,15 +222,14 @@ const Map = () => {
 
                 assets.push(
                     <TouchableOpacity key={'mobileDevice'} style={[styles.tag_container, {top: parseInt(mobileCoords.y), left: parseInt(mobileCoords.x)}]} onPress={() => {
-                        
-                        // Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance}`  : ''}`, [
-                        //     {
-                        //       text: 'Ok',
-                        //       onPress: () => {},
-                        //     }
-                        // ]);
+                        Alert.alert('Mobile Device', `X:${mobileCoords.x} \nY: ${mobileCoords.y}`, [
+                            {
+                              text: 'Ok',
+                              onPress: () => {},
+                            }
+                        ]);
                     }} >
-                        <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={colors.mobile}></Image>
+                        <Image source={require('../../assets/images/mobile.gif')} style={styles.mobile_img}></Image>
                     </TouchableOpacity>
                 )
             }

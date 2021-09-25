@@ -21,5 +21,11 @@ export default StyleSheet.create({
     },
     closeIcon: {
         marginLeft: 10
+    },
+    specialDeviceCont: {
+        marginRight: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })

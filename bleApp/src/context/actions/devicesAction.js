@@ -1,6 +1,6 @@
 export default (payload, type) => dispatch => {
     if(type === 'SCANNED_DEVICES' || type === 'STORED_DEVICES' || type === 'ADD' || type === 'REMOVE' 
-        || type === 'REMOVE_DEVICE' || type === 'ACTIVE_STATE'){
+        || type === 'REMOVE_DEVICE' || type === 'ACTIVE_STATE' || type === 'SPECIAL_DEVICE'){
         dispatch({
             type,
             payload

@@ -5,15 +5,18 @@ import { GlobalContext } from '../../context/Provider';
 import devicesAction from '../../context/actions/devicesAction';
 import styles from './styles';
 import Ionicon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import colors from '../../assets/themes/colors';
 
 const Device = ({device, handleToggle, isAdded, initCoords}) => {
     const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
     const [deviceCoords, setDeviceCoords] = useState(null);
+    const [isSpecialDevice, setisSpecialDevice] = useState(false);
     const [deviceId, setDeviceId] = useState('');
 
     useEffect(() => {
         if(device.id === deviceId && coords){
+            setisSpecialDevice(device.isSpecialDevice);
             if(device.coords){
                 setDeviceCoords(device.coords);
             }else{
@@ -24,10 +27,12 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
         }else if(device.id === deviceId && !coords){
             setDeviceCoords(null);
             setDeviceId('');
+            setisSpecialDevice(false);
         }
     }, [coords]);
 
     useEffect(() => {
+        setisSpecialDevice(device.isSpecialDevice);
         if(initCoords){
             setDeviceCoords(initCoords);
         }
@@ -36,8 +41,9 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
     const handleDevice = (async (type) => {
         try{
             if(type === 'REMOVE'){
-                devicesAction({cordinatesVal: '', currentDevice: device}, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal: '', currentDevice: device, dType: device.dType}, 'SET_COORDS')(deviceDispatch);
                 setDeviceCoords(null);
+                setisSpecialDevice(false);
             }
             handleToggle(device, type);
             setDeviceId(device.id);
@@ -60,6 +66,9 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
                 <Ionicon size={35} name="close" />
             </TouchableOpacity>
             <ToggleBtn handleDevice={handleDevice} isAdded={isAdded} device={device} changeToAdd={initCoords ? true : false}/>
+            {isSpecialDevice ? <View style={styles.specialDeviceCont}>
+                <MaterialIcon size={30} name="mobile-friendly" />
+            </View> : null}
             <View style={styles.info}>
                 <Text>{device.id}</Text>
                 <View style={styles.subInfo}>

@@ -103,6 +103,14 @@ const deviceReducer = (state, {type, payload}) => {
             // });
             
             return {...state};
+        case 'SPECIAL_DEVICE':
+            state.devices.forEach(device => {
+                if(device.id === payload.id){
+                    device['isSpecialDevice'] = payload.isSpecialDevice
+                }
+            });
+            
+            return {...state};
 
         case 'SCANNING':
             state.isScanning = payload;
@@ -115,7 +123,7 @@ const deviceReducer = (state, {type, payload}) => {
                     if(device.id === payload.currentDevice.id){
                         device['coords'] = payload.cordinatesVal;
                         device['dType'] = payload.dType;
-                        device['isSpecialDevice'] = payload.addForMobile
+                        device['isSpecialDevice'] = payload.currentDevice.isSpecialDevice
                     }
                 });
             }
