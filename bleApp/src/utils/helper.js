@@ -14,13 +14,13 @@ const validateXYCoords = (x, y) => {
     }
 }
 
-const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc, delay) => {
+const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc, delay, processMapView) => {
 
     // stop scanning devices after 5 seconds
     var timer = setTimeout(() => {
         manager.stopDeviceScan();
-        manager.destroy();
-        if(callbackFunc) callbackFunc();
+        // manager.destroy();
+        if(callbackFunc) {callbackFunc(); processMapView();}
         clearTimeout(timer);
     }, delay);
 

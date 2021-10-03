@@ -8,14 +8,14 @@ import { scanningDevices } from '../../utils/helper';
 import { requestLocationPermission } from '../../utils/permission';
 import colors from '../../assets/themes/colors';
 import loginAction from '../../context/actions/loginAction';
-const manager = new BleManager();
+let manager = new BleManager();
 import axiosInstance from '../../utils/axiosInstance';
 
 const Map = () => {
     const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);
-    let timer;
+    let interval = null, scannedDevicesArr = [], updatedRssi = {};
 
     useEffect(() => {
         if(firstLoad){
@@ -28,21 +28,67 @@ const Map = () => {
             }, true);
         }else{
             renderAssets();
+            processMapView();
         }
         
         console.log('Map Mounted')
         
         return () => {
-            console.log('Map unmounted')
-            if(timer) clearTimeout(timer);
+            console.log('Map unmounted');
+            if(interval) clearInterval(interval);
         }
     }, []);
+
+    const processMapView = () => {
+        try{
+            console.log('coming ');
+            interval = setInterval(() => {
+                scannedDevicesArr.forEach(async(id) => {
+                    let isConnected = await manager.isDeviceConnected(id);
+                    console.log('isConnected ', isConnected);
+                    if(isConnected){
+                        console.log('Connected ', id);
+                        manager.readRSSIForDevice(id).then((resp) => {
+                            console.log('RSSI: ', resp.rssi);
+                            updatedRssi[id] = resp.rssi;
+                            renderAssets();
+                        }).catch((err) => {
+                            console.log('Error: ', err);
+                        })  
+                    }else{
+                        manager.connectToDevice(id, {autoConnect:true}).then(data => {
+                            console.log('Connected ', id); 
+                            manager.readRSSIForDevice(id).then((resp) => {
+                                console.log('RSSI: ', resp.rssi);
+                                updatedRssi[id] = resp.rssi;
+                                renderAssets();
+                            }).catch((err) => {
+                                console.log('Error: ', err);
+                            })  
+                        }).catch(err => {
+                            console.log('Error connecting: ', err);
+                        })
+                    }
+                })
+            }, 10000)     
+        }catch(err){
+            console.error('Error in processMapView ', err);
+        }
+    }
+
+    const connectDevice = () => {
+        try{
+
+        }catch(err){
+            console.error('Error in connectDevice ', err);
+        }
+    }
 
     const scanDevices = async() => {
         try{
             const permission = await requestLocationPermission();
             if(permission){
-                timer = scanningDevices(deviceDispatch, devicesAction, manager, renderAssets, 5000);
+                scanningDevices(deviceDispatch, devicesAction, manager, renderAssets, 5000, processMapView);
             }
         }catch(err){
             console.error('Error in scanDevices ', err);
@@ -70,7 +116,7 @@ const Map = () => {
             
             let x = Math.round((C*E - F*B) / (E*A - B*D), 3),
             y = Math.round((C*D - A*F) / (B*D - A*E), 3);
-            console.log("r2 in TrackDevice: ", r2)
+            // console.log("r2 in TrackDevice: ", r2)
 
             // x = 0
             // y = 0
@@ -122,29 +168,10 @@ const Map = () => {
                     }
                     let coordsArr = device.coords.split(' ');
                     if(device.dType === 'beacon'){
-                        // if(device.isScanned){
-                        //     manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
-                        //         console.log(data);
-                        //         manager.readRSSIForDevice(device.id).then((resp) => {
-                        //             console.log('RSSI: ', resp);
-                        //         }).catch((err) => {
-                        //             console.log('Error: ', err);
-                        //         })  
-                        //     }).catch(err => {
-                        //         console.log('Error connecting: ', err);
-                        //     })
-                              
-                        // }
-                        // const interval = setInterval(async() => {
-                            // if(device.isScanned){
-                            //     manager.readRSSIForDevice(device.id).then((resp) => {
-                            //         console.log('RSSI: ', resp);
-                            //     }).catch((err) => {
-                            //         console.log('Error: ', err);
-                            //     })    
-                            // }
-                            
-                        // }, 2000);
+                        if(device.isScanned){
+                            if(scannedDevicesArr.indexOf(device.id) === -1)
+                                scannedDevicesArr.push(device.id);
+                        }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
                                 if(dataLoading) return;
@@ -154,9 +181,23 @@ const Map = () => {
                                     let {data} = tagData;
                                     let distance = 0;
                                     if(device.rssi){
-                                        distance = calcDistance(device.rssi);
+                                        if(updatedRssi[device.id]){
+                                            distance = calcDistance(updatedRssi[device.id]);
+                                        }else{
+                                            distance = calcDistance(device.rssi);
+                                        }
                                     }
-                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${data ? `\nTemperature: ${data.Temp}` : ''}` : ''}`, [
+                                    let temp = 0, time, date;
+                                    if(Object.keys(data).length){
+                                        console.log('Data ', data);
+                                        temp = data.Temp;
+                                        if(data.timestamp){
+                                            time = data.timestamp.split('T')[1].split('.')[0];
+                                            date = data.timestamp.split('T')[0];
+                                        }
+                                        
+                                    }
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${updatedRssi[device.id] ? updatedRssi[device.id] : device.rssi} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${temp} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}` : ''}`, [
                                         {
                                         text: 'Ok',
                                         onPress: () => {},
@@ -193,11 +234,22 @@ const Map = () => {
                                     let {data} = tagData;
                                     setDataLoading(false);
                                     let distance = 0;
-                                    if(device.rssi){
+                                    if(updatedRssi[device.id]){
+                                        distance = calcDistance(updatedRssi[device.id]);
+                                    }else{
                                         distance = calcDistance(device.rssi);
                                     }
+
+                                    let temp = 0, time, date;
+                                    if(Object.keys(data).length){
+                                        temp = data.Temp;
+                                        if(data.timestamp){
+                                            time = data.timestamp.split('T')[1].split('.')[0];
+                                            date = data.timestamp.split('T')[0];
+                                        }
+                                    }
                                     
-                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${data ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo}` : ''}`  : ''}`, [
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}` : ''}`, [
                                         {
                                         text: 'Ok',
                                         onPress: () => {},
