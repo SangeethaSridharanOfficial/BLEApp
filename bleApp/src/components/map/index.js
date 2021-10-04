@@ -35,6 +35,8 @@ const Map = () => {
         
         return () => {
             console.log('Map unmounted');
+            updatedRssi = {};
+            scannedDevicesArr = [];
             if(interval) clearInterval(interval);
         }
     }, []);
@@ -182,9 +184,12 @@ const Map = () => {
                                     let distance = 0;
                                     if(device.rssi){
                                         if(updatedRssi[device.id]){
-                                            distance = calcDistance(updatedRssi[device.id]);
+                                            let rssi = device.rssi + updatedRssi[device.id];
+                                            rssi = rssi/2;
+                                            distance = calcDistance(rssi);
                                         }else{
                                             distance = calcDistance(device.rssi);
+                                            updatedRssi[device.id] = device.rssi;
                                         }
                                     }
                                     let temp = 0, time, date;
@@ -235,9 +240,12 @@ const Map = () => {
                                     setDataLoading(false);
                                     let distance = 0;
                                     if(updatedRssi[device.id]){
-                                        distance = calcDistance(updatedRssi[device.id]);
+                                        let rssi = device.rssi + updatedRssi[device.id];
+                                            rssi = rssi/2;
+                                        distance = calcDistance(rssi);
                                     }else{
                                         distance = calcDistance(device.rssi);
+                                        updatedRssi[device.id] = device.rssi;
                                     }
 
                                     let temp = 0, time, date;
@@ -249,7 +257,7 @@ const Map = () => {
                                         }
                                     }
                                     
-                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${device.rssi} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}` : ''}`, [
+                                    Alert.alert(device.name, `Device Address: ${device.id} ${device.rssi ? `\nRSSI Value: ${updatedRssi[device.id] ? updatedRssi[device.id] : device.rssi} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}` : ''}`, [
                                         {
                                         text: 'Ok',
                                         onPress: () => {},
