@@ -41,14 +41,23 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
             </View>
             <View style={styles.tagBtns_wrapper}>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
-                    resetValues();
+                    if(parseInt(xCoordsVal) <= 300 && parseInt(yCoordsVal) <= 600){
+                        addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
+                        resetValues();
+                    }else{
+                        alert('Please insert proper X and Y values again');
+                    }
+                    
                 }}>
                     <Text style={styles.at_btn_txt}>Beacon</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
-                    resetValues();
+                    if(parseInt(xCoordsVal) <= 300 && parseInt(yCoordsVal) <= 600){
+                        addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
+                        resetValues();
+                    }else{
+                        alert('Please insert proper X and Y values again');
+                    }
                 }}>
                     <Text style={styles.at_btn_txt}>Asset</Text>
                 </TouchableOpacity>

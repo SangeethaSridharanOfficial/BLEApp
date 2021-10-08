@@ -132,7 +132,7 @@ const Map = () => {
 
     const calcDistance = (rssi) => {
         try{
-            if(!rssi) rssi = 0;
+            if(!rssi) return 1.0;
             let txpower = -77,
             n=2,
             delta = parseFloat(txpower - rssi)/(10*n),
