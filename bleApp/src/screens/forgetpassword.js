@@ -1,9 +1,9 @@
 import React, {useState, useContext} from 'react';
 import { Text, View, Image, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import AuthContainer from '../components/container/authContainer';
+import AuthContainer from '../container/authContainer';
 import Input from '../components/input';
 import CustomButton from '../components/customButton';
-import styles from '../components/container/styles';
+import styles from '../container/styles';
 import { GlobalContext } from '../context/Provider';
 import loginAction from '../context/actions/loginAction';
 import FlatButton from '../components/MyButton';

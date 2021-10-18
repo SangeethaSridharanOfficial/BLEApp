@@ -3,8 +3,8 @@ import { Alert, SafeAreaView, View, Text, TouchableOpacity, Image } from 'react-
 import { DEVICES, HOME, PROFILE, SETTINGS } from '../constants/routeNames';
 import loginAction from '../context/actions/loginAction';
 import { GlobalContext } from '../context/Provider';
-import SMContainer from '../components/container/smContainer';
-import styles from '../components/container/styles';
+import SMContainer from '../container/smContainer';
+import styles from '../container/styles';
 import colors from '../assets/themes/colors';
 import devicesAction from '../context/actions/devicesAction';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';

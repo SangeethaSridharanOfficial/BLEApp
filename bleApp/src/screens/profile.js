@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import { View, Text, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import styles from '../components/container/styles';
+import styles from '../container/styles';
 
 const Profile = () => {
     return(

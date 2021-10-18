@@ -145,6 +145,14 @@ const deviceReducer = (state, {type, payload}) => {
             state.activeState = payload;
             return {...state};
 
+        case 'DEVICE_HOLDER_COORDS':
+            state.devicePos = payload;
+            return {...state};
+
+        case 'UPDATE_DEVICE_MENU_POPUP':
+            state.devicePos.open = payload;
+            return {...state};
+
         default:
             return {...state};
     }

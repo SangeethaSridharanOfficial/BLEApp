@@ -4,8 +4,8 @@ import { requestLocationPermission } from '../utils/permission';
 import { Alert, View, ActivityIndicator, Button, ScrollView } from 'react-native';
 import { GlobalContext } from '../context/Provider';
 import devicesAction from '../context/actions/devicesAction';
-import styles from '../components/container/styles';
-import DeviceContainer from '../components/container/deviceContainer';
+import styles from '../container/styles';
+import DeviceContainer from '../container/deviceContainer';
 import {useNavigation} from '@react-navigation/native';
 import Header from './header';
 import Device from '../components/devices/index';
@@ -14,11 +14,12 @@ import { validateXYCoords, scanningDevices } from '../utils/helper';
 import { DEVICES } from '../constants/routeNames';
 import AddTag from '../components/addTag';
 import Modal from 'react-native-modal';
+import DeviceMenu from '../components/deviceMenu/menu';
 
 const Devices = () => {
     const [isLoading, setIsLoading] = useState(false);
     const manager = new BleManager();
-    const { deviceDispatch, deviceState: {devices, isScanning}, authDispatch, authState: {isLoggedIn, data} } = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {devices, isScanning, devicePos}, authDispatch, authState: {isLoggedIn, data} } = useContext(GlobalContext);
     const {setOptions, toggleDrawer} = useNavigation();
     const [currentDevice, setCurrentDevice] = useState(null);
     const [scannedDevices, setScannedDevices] = useState(null);
@@ -252,6 +253,7 @@ const Devices = () => {
             <ScrollView style={styles.deviceList}>
                 {devices.length != 0 && <View>{scannedDevices}</View>}
             </ScrollView>
+            {devicePos.open && <DeviceMenu />}
             <Modal isVisible={isModalVisible}>
                 <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal} disableSpecialDevOpt={disableSpecialDevOpt}/>
             </Modal>

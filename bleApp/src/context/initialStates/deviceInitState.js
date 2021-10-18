@@ -4,5 +4,10 @@ export default {
     devices: [],
     isScanning: false,
     coords: '',
-    activeState: HOME
+    activeState: HOME,
+    devicePos: {
+        open: false,
+        dPos: {},
+        device: null
+    }
 }

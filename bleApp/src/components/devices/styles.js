@@ -19,7 +19,7 @@ export default StyleSheet.create({
         marginLeft: 10,
         color: colors.primary
     },
-    closeIcon: {
+    menuOptBtn: {
         marginLeft: 10
     },
     specialDeviceCont: {

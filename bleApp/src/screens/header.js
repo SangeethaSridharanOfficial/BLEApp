@@ -1,12 +1,10 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import styles from '../components/container/styles';
+import styles from '../container/styles';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Ionicon from 'react-native-vector-icons/Ionicons';
-import { GlobalContext } from '../context/Provider';
 
 const Header = ({ toggleDrawer, data, activePage }) => {
-    const { deviceDispatch, deviceState: {devices, isScanning} } = useContext(GlobalContext);
 
     return(
         <View style={styles.headerCont}>

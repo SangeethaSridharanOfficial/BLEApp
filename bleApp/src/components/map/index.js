@@ -78,14 +78,6 @@ const Map = () => {
         }
     }
 
-    const connectDevice = () => {
-        try{
-
-        }catch(err){
-            console.error('Error in connectDevice ', err);
-        }
-    }
-
     const scanDevices = async() => {
         try{
             const permission = await requestLocationPermission();

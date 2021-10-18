@@ -4,7 +4,7 @@ import Header from './header';
 import {useNavigation} from '@react-navigation/native';
 import { GlobalContext } from '../context/Provider';
 import Map from '../components/map';
-import HomeContainer from '../components/container/homeContainer';
+import HomeContainer from '../container/homeContainer';
 import axiosInstance from '../utils/axiosInstance';
 import styles from '../components/map/styles';
 import devicesAction from '../context/actions/devicesAction';

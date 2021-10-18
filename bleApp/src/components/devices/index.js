@@ -4,15 +4,16 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { GlobalContext } from '../../context/Provider';
 import devicesAction from '../../context/actions/devicesAction';
 import styles from './styles';
-import Ionicon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import Entypo from 'react-native-vector-icons/Entypo';
 import colors from '../../assets/themes/colors';
 
-const Device = ({device, handleToggle, isAdded, initCoords}) => {
-    const { deviceDispatch, deviceState: {coords}} = useContext(GlobalContext);
+export default Device = ({device, handleToggle, isAdded, initCoords}) => {
+    const { deviceDispatch, deviceState: {coords, devicePos}} = useContext(GlobalContext);
     const [deviceCoords, setDeviceCoords] = useState(null);
     const [isSpecialDevice, setisSpecialDevice] = useState(false);
     const [deviceId, setDeviceId] = useState('');
+    let viewEle = null;
 
     useEffect(() => {
         if(device.id === deviceId && coords){
@@ -52,18 +53,29 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
         }
     });
 
-    const removeDevice = () => {
+    const setDevicePosition = (dPos) => {
         try{
-            devicesAction(device, 'REMOVE_DEVICE')(deviceDispatch);
+            devicesAction({open: true, dPos, device}, 'DEVICE_HOLDER_COORDS')(deviceDispatch);
         }catch(err){
-            console.error('Error in removeDevice ', err.stack);
+            console.error('Error in setDevicePosition ', err.stack);
         }
     }
 
     return(
-        <View style={[styles.deviceHolder, {backgroundColor: `${device.isScanned ? colors.grey : 'lightgrey'}`}]} key={device.id}>
-            <TouchableOpacity style={styles.closeIcon} onPress={removeDevice}>
-                <Ionicon size={35} name="close" />
+        <View ref={view => {
+                if(!view || viewEle) return;
+                viewEle = view;
+            }} style={[styles.deviceHolder, {backgroundColor: `${device.isScanned ? colors.grey : 'lightgrey'}`}]} key={device.id}>
+            <TouchableOpacity style={styles.menuOptBtn} onPress={() => {
+                if(viewEle && (!devicePos.open || devicePos.device.id !== device.id)){
+                    viewEle.measure((ps, pt, width, height, x, y) => {
+                        setDevicePosition({x, y, height, width});
+                    })
+                }else{
+                    devicesAction({open: false, dPos: {}, device: {}}, 'DEVICE_HOLDER_COORDS')(deviceDispatch);
+                }
+            }}>
+                <Entypo size={30}  name="dots-three-vertical" />
             </TouchableOpacity>
             <ToggleBtn handleDevice={handleDevice} isAdded={isAdded} device={device} changeToAdd={initCoords ? true : false}/>
             {isSpecialDevice ? <View style={styles.specialDeviceCont}>
@@ -79,5 +91,3 @@ const Device = ({device, handleToggle, isAdded, initCoords}) => {
         </View>
     )
 }
-
-export default Device;
