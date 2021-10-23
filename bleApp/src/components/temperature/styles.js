@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import colors from "../../assets/themes/colors";
 
 export default StyleSheet.create({
     hCont: {
@@ -29,15 +30,30 @@ export default StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'green',
         width: '100%',
         height: '100%'
     },
     chartHolder: {
         paddingHorizontal: 10,
-        // justifyContent: 'center',
-        backgroundColor: 'grey',
-        // width: '100%'
-        height: '80%'
+        height: '90%',
+        marginRight: 10
+        
+    },
+    tmpTxt: {
+        borderBottomWidth: 1,
+        borderBottomColor: colors.primary,
+        padding: 8
+    },
+    timeTxt: {
+        padding: 8
+    },
+    tooltipCont: {
+        position: 'absolute',
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: colors.accent,
+        height: 'auto',
+        width: 'auto',
+        zIndex: 1000
     }
 })
