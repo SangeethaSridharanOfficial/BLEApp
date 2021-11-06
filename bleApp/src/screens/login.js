@@ -39,6 +39,8 @@ const Login = () => {
                     let role = 'visitor';
                     if(eVal === 'admin@gmail.com'){
                         role = 'admin'
+                    }else if (eVal === 'manager@gmail.com'){
+                        role = 'manager'
                     }
                     console.log('Login Success ', eVal, role)
                     loginAction('LOGIN_SUCCESS', {email: eVal, role})(authDispatch);            
