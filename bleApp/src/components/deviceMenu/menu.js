@@ -48,7 +48,7 @@ export default DeviceMenu = () => {
                 setDevicePosition();
             }}>
                 <Ionicon size={30} color={colors.accent} name="close" />
-                <Text style={styles.optTxt}>Remove</Text>
+                <Text style={styles.optTxt}>Clear</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.graphHolder, styles.optHolder]} onPress={() => {
                 devicesAction(TEMPERATURE, 'ACTIVE_STATE')(deviceDispatch);

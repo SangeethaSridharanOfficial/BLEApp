@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, ActivityIndicator, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, ActivityIndicator, TouchableOpacity, Image, Alert, Text } from 'react-native';
 import { GlobalContext } from '../../context/Provider';
 import styles from './styles';
 import devicesAction from '../../context/actions/devicesAction';
@@ -10,12 +10,14 @@ import colors from '../../assets/themes/colors';
 import loginAction from '../../context/actions/loginAction';
 let manager = new BleManager();
 import axiosInstance from '../../utils/axiosInstance';
+import { SearchBar } from 'react-native-elements';
 
 const Map = () => {
-    const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad} } = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad, data: {role}} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);
     let interval = null, scannedDevicesArr = [], updatedRssi = {};
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         if(firstLoad){
@@ -30,8 +32,6 @@ const Map = () => {
             renderAssets();
             processMapView();
         }
-        
-        console.log('Map Mounted')
         
         return () => {
             console.log('Map unmounted');
@@ -130,7 +130,7 @@ const Map = () => {
             delta = parseFloat(txpower - rssi)/(10*n),
             dist = Math.pow(10, delta),
             distance = Number(dist.toFixed(2));
-
+            // distance = distance * 6;
             return distance;
         }catch(err){
             console.error('Error in calcDistance ', err);
@@ -151,7 +151,7 @@ const Map = () => {
         }
     }
 
-    const renderAssets = () => {
+    const renderAssets = (searchedName = '') => {
         try{
             let assets = [];
             let specialDevices = [];
@@ -168,7 +168,7 @@ const Map = () => {
                         }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                if(dataLoading) return;
+                                if(dataLoading || role === 'visitor') return;
                                 setDataLoading(true);
                                 fetchLatestTagData(device.id).then(tagData => {
                                     setDataLoading(false);
@@ -208,6 +208,9 @@ const Map = () => {
                             }}>
                                 <Image source={require('../../assets/images/assetPointer.gif')} style={styles.bp_img} tintColor={device.notLoaded ? 'lightgrey' : colors.beacon}
                                 ></Image>
+                               {(device.name.toLowerCase() === searchedName.toLowerCase()) ? <View style={[styles.dNameCont]}>
+                                    <Text style={styles.dNameTxt}>{device.name}</Text>
+                                </View> : null}
                             </TouchableOpacity>
                         )
                     }else{
@@ -225,7 +228,7 @@ const Map = () => {
                         // }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
-                                if(dataLoading) return;
+                                if(dataLoading || role === 'visitor') return;
                                 setDataLoading(true);
                                 fetchLatestTagData(device.id).then(tagData => {
                                     let {data} = tagData;
@@ -262,6 +265,9 @@ const Map = () => {
                                 
                             }} >
                                 <Image source={require('../../assets/images/assetPointer.gif')} style={styles.ap_img} tintColor={device.notLoaded ? 'lightgrey' : colors.asset}></Image>
+                                {(device.name.toLowerCase() === searchedName.toLowerCase()) ? <View style={[styles.dNameCont]}>
+                                    <Text style={styles.dNameTxt}>{device.name}</Text>
+                                </View> : null}
                             </TouchableOpacity>
                         )
                     }
@@ -292,16 +298,23 @@ const Map = () => {
     }
 
     return(
-        <View style={styles.mapContainer}>
-            {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
-                <ActivityIndicator color={'teal'} size={35} />
-            </View> : null}
-            {loadDevices ? <View style={styles.mapHolder}>
-                {loadDevices}
-            </View> : 
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator color={'teal'} size={25} />
-            </View>}
+        <View>
+            <SearchBar
+                placeholder="Search.."
+                onChangeText={(val) => {setSearch(val); renderAssets(val)}}
+                value={search}
+            />
+            <View style={styles.mapContainer}>
+                {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
+                    <ActivityIndicator color={'teal'} size={35} />
+                </View> : null}
+                {loadDevices ? <View style={styles.mapHolder}>
+                    {loadDevices}
+                </View> : 
+                <View style={styles.loaderContainer}>
+                    <ActivityIndicator color={'teal'} size={25} />
+                </View>}
+            </View>
         </View>
     )
 }

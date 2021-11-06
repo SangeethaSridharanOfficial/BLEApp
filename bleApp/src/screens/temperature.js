@@ -21,19 +21,30 @@ const Temperature = () => {
     const [isDeviceAvailable, setIsDeviceAvailable] = useState(true);
     const { deviceDispatch, deviceState: {devicePos}} = useContext(GlobalContext);
     const [chartData, setChartData] = useState({});
+    let dId = '';
 
     useEffect(() => {
         setOptions({
             headerStyle: {
                 backgroundColor: '#ccccf8'
             },
-            headerTitle: () => <TempHeader navigate={navigate} />
+            headerTitle: () => <TempHeader navigate={navigate} refreshData={loadData}/>
         });
         const id = devicePos.device ? devicePos.device.id : '';
         if(id){
+            dId = id;
+            loadData();
+        }else{
+            setIsDeviceAvailable(false);
+            if(isLoading) setIsLoading(false);
+        }
+    }, [])
+
+    const loadData = () => {
+        try{
             if(!isDeviceAvailable) setIsDeviceAvailable(true);
             if(!isLoading) setIsLoading(true);
-            fetchTemperatureData(id).then((resp) => {
+            fetchTemperatureData(dId).then((resp) => {
                 if(resp.data.length){
                     let labels = [], data = [];
                     let tempDt = resp.data.slice(-10);
@@ -41,6 +52,8 @@ const Temperature = () => {
                         let time = dev.timestamp.split('T')[1].split('.')[0];
                         labels.push(time);
                         data.push(parseInt(dev.Temp));
+                        labels = labels.reverse();
+                        data = data.reverse();
                     })
                     setChartData({
                         labels, // hours
@@ -62,12 +75,10 @@ const Temperature = () => {
                 console.log('Error ', err);
                 setIsLoading(false);
             })
-        }else{
-            setIsDeviceAvailable(false);
-            if(isLoading) setIsLoading(false);
+        }catch(err){
+            console.error('Error in loadData ', err);
         }
-        
-    }, [])
+    }
 
     const fetchTemperatureData = (id) => {
         try{
@@ -106,9 +117,7 @@ const Temperature = () => {
             strokeWidth: "2",
             stroke: "#ffa726"
         }
-    };   
-    
-    
+    };
 
     return(
         <View style={styles.tempContainer}>
@@ -125,14 +134,18 @@ const Temperature = () => {
                             width={600}
                             height={screenHeight}
                             verticalLabelRotation={30}
+                            horizontalLabelRotation={30}
+                            yLabelsOffset={10}
                             chartConfig={chartConfig}
                             bezier
                             onDataPointClick={(dt) => {
                                 setTempData(dt);
                                 setOpenToolTip(true);
                             }}
+                            formatYLabel={val => `${parseInt(val)}`}
                             style={{
-                                paddingRight: 30
+                                paddingRight: 30,
+                                paddingLeft: 20
                             }}
                         />
                     </TouchableOpacity>
@@ -140,7 +153,7 @@ const Temperature = () => {
                 {openToolTip && <View
                     style={[styles.tooltipCont, {
                         top: tempData.y + 10,
-                        left: tempData.x - scrollPos.x - 50
+                        left: tempData.x - scrollPos.x - 30
                     }]}>
                         <Text style={styles.tmpTxt}><Text style={{fontWeight: "bold"}}>{`Temperature: `}</Text><Text>{`${tempData.value}`}</Text></Text>
                         <Text style={styles.timeTxt}><Text style={{fontWeight: "bold"}}>{`Time: `}</Text><Text>{`${chartData.labels[tempData.index]}`}</Text></Text>

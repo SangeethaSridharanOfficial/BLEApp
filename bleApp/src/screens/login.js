@@ -35,9 +35,13 @@ const Login = () => {
                     alert(res.data.message);
                 }
                 else {
-                    //console.log('fantastic ' + email)
                     setErrorText('')
-                    loginAction('LOGIN_SUCCESS', {email: eVal})(authDispatch);            
+                    let role = 'visitor';
+                    if(eVal === 'admin@gmail.com'){
+                        role = 'admin'
+                    }
+                    console.log('Login Success ', eVal, role)
+                    loginAction('LOGIN_SUCCESS', {email: eVal, role})(authDispatch);            
                 }
             }
         )

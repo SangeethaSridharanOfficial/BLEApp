@@ -1,7 +1,8 @@
 export default {
-    isLoggedIn : true,
+    isLoggedIn : false,
     data: {
-        userName: 'Test'
+        userName: 'Test',
+        role: 'visitor'
     },
     error: null,
     loading: false,

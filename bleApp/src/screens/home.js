@@ -9,6 +9,7 @@ import axiosInstance from '../utils/axiosInstance';
 import styles from '../components/map/styles';
 import devicesAction from '../context/actions/devicesAction';
 import { HOME } from '../constants/routeNames';
+import {SearchBar} from 'react-native-elements';
 
 const Home = () => {
     const {setOptions, toggleDrawer} = useNavigation();

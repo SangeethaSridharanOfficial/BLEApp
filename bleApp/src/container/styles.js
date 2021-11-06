@@ -48,7 +48,7 @@ export default StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        width: '30%',
+        width: '50%'
     },
 
     menuIcon: {

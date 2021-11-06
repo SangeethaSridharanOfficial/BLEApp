@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from '../container/styles';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import Ionicon from 'react-native-vector-icons/Ionicons';
 
 const Header = ({ toggleDrawer, data, activePage }) => {
 
@@ -19,7 +18,7 @@ const Header = ({ toggleDrawer, data, activePage }) => {
             </TouchableOpacity>
             <View style={styles.rightWrapper}>
                 <View>
-                    <Text style={styles.userName}>{data.userName}</Text>
+                    <Text style={styles.userName}>{data && data.userName}</Text>
                 </View>
             </View>
         </View>

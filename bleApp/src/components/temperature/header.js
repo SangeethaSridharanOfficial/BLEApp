@@ -6,7 +6,7 @@ import { DEVICES } from '../../constants/routeNames';
 import { GlobalContext } from '../../context/Provider';
 import devicesAction from '../../context/actions/devicesAction';
 
-export default TempHeader = ({navigate}) => {
+export default TempHeader = ({navigate, refreshData}) => {
     const { deviceState: {devicePos}, deviceDispatch } = useContext(GlobalContext);
     useEffect(() => {
         console.log('Device Name ', devicePos);
@@ -26,6 +26,9 @@ export default TempHeader = ({navigate}) => {
             <View style={styles.dNameHolder}>
                 <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.dNameTxt, styles.txtStyle]}>{`${devicePos.device.name}`}</Text>
             </View>
+            <TouchableOpacity style={styles.refreshHolder} onPress={refreshData}>
+                <Ionicon size={30} name="refresh" />
+            </TouchableOpacity>
         </View>
     )
 }

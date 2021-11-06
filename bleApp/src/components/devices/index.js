@@ -9,7 +9,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import colors from '../../assets/themes/colors';
 
 export default Device = ({device, handleToggle, isAdded, initCoords}) => {
-    const { deviceDispatch, deviceState: {coords, devicePos}} = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {coords, devicePos}, authState: {data: {role}}} = useContext(GlobalContext);
     const [deviceCoords, setDeviceCoords] = useState(null);
     const [isSpecialDevice, setisSpecialDevice] = useState(false);
     const [deviceId, setDeviceId] = useState('');
@@ -77,7 +77,7 @@ export default Device = ({device, handleToggle, isAdded, initCoords}) => {
             }}>
                 <Entypo size={30}  name="dots-three-vertical" />
             </TouchableOpacity>
-            <ToggleBtn handleDevice={handleDevice} isAdded={isAdded} device={device} changeToAdd={initCoords ? true : false}/>
+            {(role === 'admin') ? <ToggleBtn handleDevice={handleDevice} isAdded={isAdded} device={device} changeToAdd={initCoords ? true : false}/> : null }
             {isSpecialDevice ? <View style={styles.specialDeviceCont}>
                 <MaterialIcon size={30} name="mobile-friendly" />
             </View> : null}

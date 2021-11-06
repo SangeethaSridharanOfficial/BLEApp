@@ -3,16 +3,27 @@ import { View, Text, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'r
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import styles from '../container/styles';
+import {useNavigation} from '@react-navigation/native';
+import { PROFILE } from '../constants/routeNames';
+import Header from './header';
 
 const Profile = () => {
+    const {setOptions, toggleDrawer} = useNavigation();
+    useEffect(() => {
+        setOptions({
+            headerStyle: {
+                backgroundColor: '#ccccf8'
+            },
+            headerTitle: () => <Header toggleDrawer={toggleDrawer} activePage={PROFILE}/>
+        });
+    }, [])
+
     return(
         <SafeAreaView style={styles.profileWrapper}>
             <View style={styles.pHeaderWrapper}>
-                <MaterialIcon size={25} name="menu" />
                 <View style={styles.imageWrapper}>
                     <Image source={require('../assets/images/login.png')}
                         style={styles.profileImg}></Image>
-                    
                 </View>
             </View>
             <ScrollView>
