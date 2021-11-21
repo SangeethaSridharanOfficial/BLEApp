@@ -153,6 +153,10 @@ const deviceReducer = (state, {type, payload}) => {
             state.devicePos.open = payload;
             return {...state};
 
+        case 'UPDATE_MAP_HOLDER_ELEMENT':
+            state.mapHolderPos = payload;
+            return {...state}
+            
         default:
             return {...state};
     }

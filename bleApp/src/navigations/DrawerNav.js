@@ -1,12 +1,13 @@
 import React, { useContext } from 'react';
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { DEVICES, SETTINGS, PROFILE, HOME, TEMPERATURE } from '../constants/routeNames';
+import { DEVICES, SETTINGS, PROFILE, HOME, TEMPERATURE, LOCATION } from '../constants/routeNames';
 import DeviceNav from './DeviceNav';
 import Settings from './SettingsNav';
 import SideMenu from '../screens/sideMenu';
 import HomeNav from './HomeNav';
 import TempNav from './TempNav';
 import ProfileNav from './ProfileNav';
+import LocationNav from './LocationNav';
 
 const Drawer = createDrawerNavigator();
 
@@ -22,6 +23,7 @@ const DrawerNav = () => {
             <Drawer.Screen name={SETTINGS} component={Settings} />
             <Drawer.Screen name={PROFILE} component={ProfileNav} />
             <Drawer.Screen name={TEMPERATURE} component={TempNav} />
+            <Drawer.Screen name={LOCATION} component={LocationNav} />
         </Drawer.Navigator>
     )
 }

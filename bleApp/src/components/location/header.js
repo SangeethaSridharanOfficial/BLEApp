@@ -6,9 +6,9 @@ import { DEVICES } from '../../constants/routeNames';
 import { GlobalContext } from '../../context/Provider';
 import devicesAction from '../../context/actions/devicesAction';
 
-export default TempHeader = ({navigate, refreshData}) => {
+export default LocHeader = ({navigate}) => {
     const { deviceState: {devicePos}, deviceDispatch } = useContext(GlobalContext);
-    
+
     return(
         <View style={styles.hCont}>
             <TouchableOpacity style={styles.backBtnHolder} onPress={() => {
@@ -17,14 +17,14 @@ export default TempHeader = ({navigate, refreshData}) => {
                 navigate(DEVICES);
             }}>
                 <Ionicon size={30} name="arrow-back"/>
-                <View style={styles.tempTxtHolder}>
-                    <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.tempTxt, styles.txtStyle]}>Temperature</Text>
+                <View style={styles.locTxtHolder}>
+                    <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.locTxt, styles.txtStyle]}>Location</Text>
                 </View>
             </TouchableOpacity>
             <View style={styles.dNameHolder}>
                 <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.dNameTxt, styles.txtStyle]}>{`${devicePos.device.name}`}</Text>
             </View>
-            <TouchableOpacity style={styles.refreshHolder} onPress={refreshData}>
+            <TouchableOpacity style={styles.refreshHolder}>
                 <Ionicon size={30} name="refresh" />
             </TouchableOpacity>
         </View>

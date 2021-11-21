@@ -8,3 +8,4 @@ export const FORGETPASS = 'ForgetPassword';
 export const RESETPASS = 'ResetPassword';
 export const HOME = 'Home';
 export const TEMPERATURE = 'Temperature';
+export const LOCATION = 'Location';

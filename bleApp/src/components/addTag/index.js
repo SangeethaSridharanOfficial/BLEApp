@@ -1,18 +1,28 @@
-import React, { useEffect, useState, Component } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {View, TextInput, Text, TouchableOpacity, TouchableWithoutFeedback  } from 'react-native';
 import styles from './styles';
 import {CheckBox} from 'react-native-elements';
+import { GlobalContext } from '../../context/Provider';
 
 const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
     const [xCoordsVal, setXCoordsVal] = useState('');
     const [yCoordsVal, setYCoordsVal] = useState('');
     const [isSelected, setSelection] = useState(false);
+    const { deviceState: {mapHolderPos} } = useContext(GlobalContext);
+    const [maxPos, setMaxPos] = useState(null);
+    const widthCheck = 80, heightCheck = 100;
 
     const resetValues = () => {
         toggleModal();
         setXCoordsVal('');
         setYCoordsVal('');
     };
+
+    useEffect(() => {
+        let maxHeight = Math.floor(mapHolderPos.height) - heightCheck,
+        maxWidth = Math.floor(mapHolderPos.width) - widthCheck;
+        setMaxPos({maxWidth, maxHeight})
+    }, [])
 
     return(
         <View style={styles.addTagView}>
@@ -41,7 +51,8 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
             </View>
             <View style={styles.tagBtns_wrapper}>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    if(parseInt(xCoordsVal) <= 300 && parseInt(yCoordsVal) <= 600){
+                    if(parseInt(xCoordsVal) <= maxPos.maxWidth && parseInt(yCoordsVal) <= maxPos.maxHeight
+                    && parseInt(xCoordsVal) > widthCheck && parseInt(yCoordsVal) > heightCheck){
                         addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
                         resetValues();
                     }else{
@@ -52,7 +63,8 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
                     <Text style={styles.at_btn_txt}>Beacon</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    if(parseInt(xCoordsVal) <= 300 && parseInt(yCoordsVal) <= 600){
+                    if(parseInt(xCoordsVal) <= maxPos.maxWidth && parseInt(yCoordsVal) <= maxPos.maxHeight
+                    && parseInt(xCoordsVal) > widthCheck && parseInt(yCoordsVal) > heightCheck){
                         addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
                         resetValues();
                     }else{

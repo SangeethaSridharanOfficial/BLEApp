@@ -62,5 +62,8 @@ export default StyleSheet.create({
         backgroundColor: 'rgba(52, 52, 52, 0.7)',
         zIndex: 3,
         elevation: 3,
+    },
+    searchCont: {
+        backgroundColor: 'white'
     }
 })

@@ -13,11 +13,12 @@ import axiosInstance from '../../utils/axiosInstance';
 import { SearchBar } from 'react-native-elements';
 
 const Map = () => {
-    const { deviceDispatch, deviceState: {devices}, authDispatch, authState: {firstLoad, data: {role}} } = useContext(GlobalContext);
+    const { deviceDispatch, deviceState: {devices, mapHolderPos}, authDispatch, authState: {firstLoad, data: {role}} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);
     let interval = null, scannedDevicesArr = [], updatedRssi = {};
     const [search, setSearch] = useState('');
+    var [mapHolderPost, setmapHolderPost] = useState(null);
 
     useEffect(() => {
         if(firstLoad){
@@ -34,22 +35,24 @@ const Map = () => {
         }
         
         return () => {
-            console.log('Map unmounted');
+            console.log('Map unmounted ');
             updatedRssi = {};
             scannedDevicesArr = [];
             if(interval) clearInterval(interval);
         }
     }, []);
 
+    useEffect(() => {
+        if(!mapHolderPos) devicesAction(mapHolderPost, 'UPDATE_MAP_HOLDER_ELEMENT')(deviceDispatch);
+    }, [mapHolderPost])
+
     const processMapView = () => {
         try{
-            console.log('coming ');
             interval = setInterval(() => {
                 scannedDevicesArr.forEach(async(id) => {
                     let isConnected = await manager.isDeviceConnected(id);
                     console.log('isConnected ', isConnected);
                     if(isConnected){
-                        console.log('Connected ', id);
                         manager.readRSSIForDevice(id).then((resp) => {
                             console.log('RSSI: ', resp.rssi);
                             updatedRssi[id] = resp.rssi;
@@ -59,7 +62,6 @@ const Map = () => {
                         })  
                     }else{
                         manager.connectToDevice(id, {autoConnect:true}).then(data => {
-                            console.log('Connected ', id); 
                             manager.readRSSIForDevice(id).then((resp) => {
                                 console.log('RSSI: ', resp.rssi);
                                 updatedRssi[id] = resp.rssi;
@@ -91,27 +93,43 @@ const Map = () => {
 
     const trackMobileDevice = (devicesArr) => {
         try{
+            let r1 = calcDistance(devicesArr[0].rssi),
+            r2 = calcDistance(devicesArr[1].rssi),
+            r3 = calcDistance(devicesArr[2].rssi);
+            if(updatedRssi[devicesArr[0].id]){
+                let rssi = devicesArr[0].rssi + updatedRssi[devicesArr[0].id];
+                    rssi = rssi/2;
+                r1 = calcDistance(rssi);
+            }
+            if(updatedRssi[devicesArr[1].id]){
+                let rssi = devicesArr[1].rssi + updatedRssi[devicesArr[1].id];
+                    rssi = rssi/2;
+                r2 = calcDistance(rssi);
+            }
+            if(updatedRssi[devicesArr[2].id]){
+                let rssi = devicesArr[2].rssi + updatedRssi[devicesArr[2].id];
+                    rssi = rssi/2;
+                r3 = calcDistance(rssi);
+            }
             let x1 = parseInt(devicesArr[0].coords.split(' ')[0]),
             y1 = parseInt(devicesArr[0].coords.split(' ')[1]),
             x2 = parseInt(devicesArr[1].coords.split(' ')[0]),
             y2 = parseInt(devicesArr[1].coords.split(' ')[1]),
             x3 = parseInt(devicesArr[2].coords.split(' ')[0]),
-            y3 = parseInt(devicesArr[2].coords.split(' ')[1]),
-            r1 = calcDistance(devicesArr[0].rssi),
-            r2 = calcDistance(devicesArr[1].rssi),
-            r3 = calcDistance(devicesArr[2].rssi);
+            y3 = parseInt(devicesArr[2].coords.split(' ')[1]);
+
+            // x1 = 100, y1 = 200, x2 = 300, y2 = 200, x3 = 100, y3 = 400;
+            // r1 = 141, r2 = 141, r3 = 141;
 
             let A = 2*x2 - 2*x1,
             B = 2*y2 - 2*y1,
-            C = r1**2 - r2**2 - x1**2 + x2**2 - y1**2 + y2**2,
+            C = Math.pow(r1, 2) - Math.pow(r2,2) - Math.pow(x1,2) + Math.pow(x2,2) - Math.pow(y1,2) + Math.pow(y2,2),
             D = 2*x3 - 2*x2,
             E = 2*y3 - 2*y2,
-            F = r2**2 - r3**2 - x2**2 + x3**2 - y2**2 + y3**2;
+            F = Math.pow(r2,2) - Math.pow(r3,2) - Math.pow(x2,2) + Math.pow(x3,2) - Math.pow(y2,2) + Math.pow(y3,2);
             
-            let x = Math.round((C*E - F*B) / (E*A - B*D), 3),
-            y = Math.round((C*D - A*F) / (B*D - A*E), 3);
-            // console.log("r2 in TrackDevice: ", r2)
-
+            let x = (C*E - F*B) / (E*A - B*D),
+            y = (C*D - A*F) / (B*D - A*E);
             // x = 0
             // y = 0
             // print('error in trilateration')
@@ -124,6 +142,7 @@ const Map = () => {
 
     const calcDistance = (rssi) => {
         try{
+            console.log('rssi dee ', rssi)
             if(!rssi) return 1.0;
             let txpower = -77,
             n=2,
@@ -299,7 +318,8 @@ const Map = () => {
 
     return(
         <View>
-            <SearchBar
+            <SearchBar containerStyle={{backgroundColor: 'white'}} style={styles.searchCont} 
+                inputContainerStyle={{backgroundColor: 'white'}}
                 placeholder="Search.."
                 onChangeText={(val) => {setSearch(val); renderAssets(val)}}
                 value={search}
@@ -308,7 +328,13 @@ const Map = () => {
                 {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
                     <ActivityIndicator color={'teal'} size={35} />
                 </View> : null}
-                {loadDevices ? <View style={styles.mapHolder}>
+                {loadDevices ? <View style={styles.mapHolder} ref={view => {
+                    if(!view) return;
+                    view.measure((ps, pt, width, height, x, y) => {
+                        setmapHolderPost({x, y, height, width})
+                    })
+                    
+                }}>
                     {loadDevices}
                 </View> : 
                 <View style={styles.loaderContainer}>

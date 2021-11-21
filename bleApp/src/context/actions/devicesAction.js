@@ -10,6 +10,8 @@ export default (payload, type) => dispatch => {
         dispatch({type})
     }else if(type === 'SCANNING' || type === 'SET_COORDS' || type === 'SET_DTYPE'){
         dispatch({type, payload})
+    }else if(type === 'UPDATE_MAP_HOLDER_ELEMENT'){
+        dispatch({type, payload})
     }
     
 }

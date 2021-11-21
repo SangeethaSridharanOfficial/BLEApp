@@ -9,5 +9,6 @@ export default {
         open: false,
         dPos: {},
         device: null
-    }
+    },
+    mapHolderPos: null
 }
