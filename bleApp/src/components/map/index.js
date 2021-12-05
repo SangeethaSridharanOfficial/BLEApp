@@ -142,7 +142,6 @@ const Map = () => {
 
     const calcDistance = (rssi) => {
         try{
-            console.log('rssi dee ', rssi)
             if(!rssi) return 1.0;
             let txpower = -77,
             n=2,
@@ -205,7 +204,6 @@ const Map = () => {
                                     }
                                     let temp = 0, time, date;
                                     if(Object.keys(data).length){
-                                        console.log('Data ', data);
                                         temp = data.Temp;
                                         if(data.timestamp){
                                             time = data.timestamp.split('T')[1].split('.')[0];

@@ -38,4 +38,24 @@ export default StyleSheet.create({
         width: '100%',
         height: '100%'
     },
+
+    alocHolder: {
+        width: '90%',
+        height: '90%',
+        position: 'relative',
+        backgroundColor: 'lightgrey'
+    },
+    ap_img: {
+        width:15,
+        height: 15
+    },
+
+    tagHolder: {
+        position: 'absolute',
+        width: 15,
+        height: 15,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 })
