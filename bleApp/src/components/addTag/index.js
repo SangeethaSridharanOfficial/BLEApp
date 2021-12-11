@@ -10,7 +10,7 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
     const [isSelected, setSelection] = useState(false);
     const { deviceState: {mapHolderPos} } = useContext(GlobalContext);
     const [maxPos, setMaxPos] = useState(null);
-    const widthCheck = 80, heightCheck = 100;
+    const widthCheck = 0, heightCheck = 0;
 
     const resetValues = () => {
         toggleModal();
@@ -51,9 +51,12 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
             </View>
             <View style={styles.tagBtns_wrapper}>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    if(parseInt(xCoordsVal) <= maxPos.maxWidth && parseInt(yCoordsVal) <= maxPos.maxHeight
-                    && parseInt(xCoordsVal) > widthCheck && parseInt(yCoordsVal) > heightCheck){
-                        addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
+                    console.log("wid ", maxPos.maxWidth, maxPos.maxHeight)
+                    let x = xCoordsVal*20;
+                    let y = yCoordsVal*20;
+                    if(parseInt(x) <= maxPos.maxWidth && parseInt(y) <= maxPos.maxHeight
+                    && parseInt(x) >= widthCheck && parseInt(y) >= heightCheck){
+                        addCoordinates('beacon', x, y, isSelected);
                         resetValues();
                     }else{
                         alert('Please insert proper X and Y values again');

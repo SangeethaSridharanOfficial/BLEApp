@@ -111,12 +111,14 @@ const Map = () => {
                     rssi = rssi/2;
                 r3 = calcDistance(rssi);
             }
-            let x1 = parseInt(devicesArr[0].coords.split(' ')[0]),
-            y1 = parseInt(devicesArr[0].coords.split(' ')[1]),
-            x2 = parseInt(devicesArr[1].coords.split(' ')[0]),
-            y2 = parseInt(devicesArr[1].coords.split(' ')[1]),
-            x3 = parseInt(devicesArr[2].coords.split(' ')[0]),
-            y3 = parseInt(devicesArr[2].coords.split(' ')[1]);
+            let x1 = parseInt(devicesArr[0].coords.split(' ')[0])/20,
+            y1 = parseInt(devicesArr[0].coords.split(' ')[1])/20,
+            x2 = parseInt(devicesArr[1].coords.split(' ')[0])/20,
+            y2 = parseInt(devicesArr[1].coords.split(' ')[1])/20,
+            x3 = parseInt(devicesArr[2].coords.split(' ')[0])/20,
+            y3 = parseInt(devicesArr[2].coords.split(' ')[1])/20;
+
+            
 
             // x1 = 100, y1 = 200, x2 = 300, y2 = 200, x3 = 100, y3 = 400;
             // r1 = 141, r2 = 141, r3 = 141;
@@ -134,6 +136,7 @@ const Map = () => {
             // y = 0
             // print('error in trilateration')
             // print(x1,y1,x2,y2,x3,y3)
+            console.log('mob ', x, y)
             return {x, y}
         }catch(err){
             console.error('Error in trackMobileDevice ', err);
@@ -143,7 +146,7 @@ const Map = () => {
     const calcDistance = (rssi) => {
         try{
             if(!rssi) return 1.0;
-            let txpower = -77,
+            let txpower = -69,
             n=2,
             delta = parseFloat(txpower - rssi)/(10*n),
             dist = Math.pow(10, delta),
@@ -296,8 +299,8 @@ const Map = () => {
                 let mobileCoords = trackMobileDevice(specialDevices);
 
                 assets.push(
-                    <TouchableOpacity key={'mobileDevice'} style={[styles.tag_container, {top: parseInt(mobileCoords.y), left: parseInt(mobileCoords.x)}]} onPress={() => {
-                        Alert.alert('Mobile Device', `X:${mobileCoords.x} \nY: ${mobileCoords.y}`, [
+                    <TouchableOpacity key={'mobileDevice'} style={[styles.tag_container, {top: parseInt(mobileCoords.y*20), left: parseInt(mobileCoords.x*20)}]} onPress={() => {
+                        Alert.alert('Mobile Device', `X:${mobileCoords.x*20} \nY: ${mobileCoords.y *20}`, [
                             {
                               text: 'Ok',
                               onPress: () => {},
