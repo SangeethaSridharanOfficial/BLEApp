@@ -255,7 +255,7 @@ const Devices = () => {
             </ScrollView>
             {devicePos.open && <DeviceMenu />}
             <Modal isVisible={isModalVisible}>
-                <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal} disableSpecialDevOpt={disableSpecialDevOpt}/>
+                <AddTag addCoordinates={addCoordinates} toggleModal={toggleModal} device={currentDevice} disableSpecialDevOpt={disableSpecialDevOpt}/>
             </Modal>
             
         </DeviceContainer> 

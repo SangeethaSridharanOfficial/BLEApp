@@ -3,8 +3,9 @@ import {View, TextInput, Text, TouchableOpacity, TouchableWithoutFeedback  } fro
 import styles from './styles';
 import {CheckBox} from 'react-native-elements';
 import { GlobalContext } from '../../context/Provider';
+import axiosInstance from '../../utils/axiosInstance';
 
-const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
+const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt, device}) => {
     const [xCoordsVal, setXCoordsVal] = useState('');
     const [yCoordsVal, setYCoordsVal] = useState('');
     const [isSelected, setSelection] = useState(false);
@@ -23,6 +24,21 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
         maxWidth = Math.floor(mapHolderPos.width) - widthCheck;
         setMaxPos({maxWidth, maxHeight})
     }, [])
+
+
+    const fetchLocationData = (assetIds) => {
+        try{
+            return new Promise((resolve, reject) => {
+                axiosInstance.post(`/azure/location/assetsloc`, {assetIds}).then(resp => {
+                    return resolve(resp.data);
+                }).catch(err => {
+                    return reject(err);
+                }) 
+            });
+        }catch(err){
+            console.error('Error in fetchLocationData ', err);
+        }
+    }
 
     return(
         <View style={styles.addTagView}>
@@ -68,8 +84,18 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt}) => {
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
                     if(parseInt(xCoordsVal) <= maxPos.maxWidth && parseInt(yCoordsVal) <= maxPos.maxHeight
                     && parseInt(xCoordsVal) > widthCheck && parseInt(yCoordsVal) > heightCheck){
-                        addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
-                        resetValues();
+                        fetchLocationData([device.id]).then(resp => {
+                            xCoordsVal = `${resp.data[0].x}`;
+                            yCoordsVal = `${resp.data[0].y}`;
+                            addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
+                            resetValues();
+                        }).catch(err => {
+                            console.error('error in fetchLocation ', err);
+                            addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
+                            resetValues();
+                        })
+
+                       
                     }else{
                         alert('Please insert proper X and Y values again');
                     }
