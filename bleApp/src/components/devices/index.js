@@ -24,7 +24,7 @@ export default Device = ({device, handleToggle, isAdded, initCoords}) => {
                 setDeviceCoords(null)
             }
             setDeviceId('');
-            devicesAction({cordinatesVal: '', currentDevice: null}, 'SET_COORDS')(deviceDispatch);
+            devicesAction({cordinatesVal: ''}, 'SET_COORDS')(deviceDispatch);
         }else if(device.id === deviceId && !coords){
             setDeviceCoords(null);
             setDeviceId('');
@@ -42,7 +42,7 @@ export default Device = ({device, handleToggle, isAdded, initCoords}) => {
     const handleDevice = (async (type) => {
         try{
             if(type === 'REMOVE'){
-                devicesAction({cordinatesVal: '', currentDevice: device, dType: device.dType}, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal: '', isSpecialDevice: device.isSpecialDevice, id: device.id, dType: device.dType}, 'SET_COORDS')(deviceDispatch);
                 setDeviceCoords(null);
                 setisSpecialDevice(false);
             }

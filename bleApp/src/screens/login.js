@@ -36,7 +36,7 @@ const Login = () => {
                 }
                 else {
                     setErrorText('')
-                    let role = 'admin';
+                    let role = 'visitor';
                     if(eVal === 'admin@gmail.com'){
                         role = 'admin'
                     }else if (eVal === 'manager@gmail.com'){

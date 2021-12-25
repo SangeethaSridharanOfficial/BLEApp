@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, ActivityIndicator, TouchableOpacity, Image, Alert, Text } from 'react-native';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { View, ActivityIndicator, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import { GlobalContext } from '../../context/Provider';
 import styles from './styles';
 import devicesAction from '../../context/actions/devicesAction';
@@ -10,40 +10,160 @@ import colors from '../../assets/themes/colors';
 import loginAction from '../../context/actions/loginAction';
 let manager = new BleManager();
 import axiosInstance from '../../utils/axiosInstance';
+import { Dimensions } from "react-native";
 import { SearchBar } from 'react-native-elements';
+import { VictoryChart, VictoryScatter, VictoryZoomContainer, VictoryLabel } from "victory-native";
+import {Text, Svg, Circle, Marker} from "react-native-svg";
+
+var assetTimer = null, interval = null;
+var TAG_DATA = [
+    { x: -1, y: -2, name: 'Asset', id: "da:6a:f3:e4:58:7f" },
+    { x: -10, y: 5, name: 'Asset1', id: "ef:e3:f2:81:8e:08" }
+]
+
+let circleCount = 0;
+
+const TouchableCircle = (props) => {
+    circleCount++;
+    const circlePressed = () => {
+      props.onPress(props.pointValue);
+    }
+    let color = props.pointValue.dType === 'beacon' ? colors.beacon : colors.asset;
+    if( props.pointValue.notLoaded ) color = 'lightgrey';
+    if(props.pointValue.name === 'mobile') color = colors.mobile
+  
+    return (
+        <Circle cx={props.cx} cy={props.cy} r={props.r} strokeWidth={2} fill={color} onPressIn={circlePressed}/>
+    );
+  }
+const DataPoint = ({ x, y, data, updatedRssi, calcDistance, role, fetchLatestTagData, setDataLoading, dataLoading }) => {
+
+    const handleClick = (props) => {
+        if(props.name === 'mobile'){
+            Alert.alert('Mobile Device', `X:${props.x*20} \nY: ${props.y *20}`, [
+                {
+                  text: 'Ok',
+                  onPress: () => {},
+                }
+            ]);
+            return;
+        }
+        if(dataLoading || role === 'visitor') return;
+
+        setDataLoading(true);
+        fetchLatestTagData(props.id).then(tagData => {
+            setDataLoading(false);
+            let {data} = tagData;
+            let distance = 0;
+            if(props.rssi){
+                if(updatedRssi[props.id]){
+                    let rssi = props.rssi + updatedRssi[props.id];
+                    rssi = rssi/2;
+                    distance = calcDistance(rssi);
+                }else{
+                    distance = calcDistance(props.rssi);
+                    updatedRssi[props.id] = props.rssi;
+                }
+            }
+            let temp = 0, time, date;
+            if(Object.keys(data).length){
+                temp = data.Temp;
+                if(data.timestamp){
+                    time = data.timestamp.split('T')[1].split('.')[0];
+                    date = data.timestamp.split('T')[0];
+                }
+                
+            }
+            
+            if(props.dType === 'beacon'){
+                Alert.alert(props.name, `Device Address: ${props.id} ${props.rssi ? `\nRSSI Value: ${updatedRssi[props.id] ? updatedRssi[props.id] : props.rssi} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${temp} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}` : ''}`, [
+                    {
+                    text: 'Ok',
+                    onPress: () => {},
+                    }
+                ]);
+            }else{
+                Alert.alert(props.name, `Device Address: ${props.id} \nDistance: ${distance} ${Object.keys(data).length ? `\nTemperature: ${data.Temp}  \nClickNo: ${data.ClickNo} ${time ? `\nDate: ${date} \nTime: ${time}` : ''}` : ''}`, [
+                    {
+                    text: 'Ok',
+                    onPress: () => {},
+                    }
+                ]);
+            }
+            
+            
+        }).catch(err => {
+            setDataLoading(false);
+            console.error('ERROR ', err);
+        });
+    }
+
+    return (
+        <TouchableCircle cx={x} cy={y} r={'7'} pointValue={data[circleCount]} onPress={handleClick}/>
+    )
+}
+
+const DataLabel = props => {
+    const x = props.scale.x(props.x);
+    const y = props.scale.y(props.y);
+    return <VictoryLabel lineHeight={3} {...props} x={x - 25} y={y - 20} style={{fill: colors.accent, fontSize: 20, fontWeight: 'bold'}}/>
+};
 
 const Map = () => {
     const { deviceDispatch, deviceState: {devices, mapHolderPos}, authDispatch, authState: {firstLoad, data: {role}} } = useContext(GlobalContext);
     const [loadDevices, setLoadDevices] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);
-    let interval = null, scannedDevicesArr = [], updatedRssi = {};
+    let deviceObj = {};
+    let scannedDevicesArr = [], updatedRssi = {};
     const [search, setSearch] = useState('');
     var [mapHolderPost, setmapHolderPost] = useState(null);
+    
 
     useEffect(() => {
-        if(firstLoad){
-            loginAction('FIRST_LOAD')(authDispatch);
-            const subscription = manager.onStateChange(state => {
-                if (state === "PoweredOn") {
-                  subscription.remove();
-                  scanDevices();
+        if(!firstLoad){
+            initialDeviceData();
+            let assetIds = [];
+            devices.forEach(dev => {
+                if(dev.name && dev.name.toLowerCase().includes('asset')){
+                    assetIds.push(dev.id);
                 }
-            }, true);
-        }else{
-            renderAssets();
+            })
+            // assetIds = ["da:6a:f3:e4:58:7f", "ef:e3:f2:81:8e:08"]
+            if(assetIds.length){
+                getAssetLocationWithTimer(assetIds);
+            }
+            renderTags();
             processMapView();
         }
-        
         return () => {
-            console.log('Map unmounted ');
+            console.log('Map unmounted ', assetTimer, interval);
             updatedRssi = {};
             scannedDevicesArr = [];
+            Object.keys(deviceObj).forEach(key => {
+                let dObj = deviceObj[key];
+                if( dObj.dType !== 'beacon' ){
+                    devicesAction({cordinatesVal: dObj.coords, isSpecialDevice: dObj.isSpecialDevice, id: key, dType: dObj.dType}, 'SET_COORDS')(deviceDispatch);
+                }
+            })
+            
             if(interval) clearInterval(interval);
+            clearInterval(assetTimer);
         }
     }, []);
 
     useEffect(() => {
-        if(!mapHolderPos) devicesAction(mapHolderPost, 'UPDATE_MAP_HOLDER_ELEMENT')(deviceDispatch);
+        if(!mapHolderPos && mapHolderPost && mapHolderPost.height) {
+            devicesAction(mapHolderPost, 'UPDATE_MAP_HOLDER_ELEMENT')(deviceDispatch);
+            if(firstLoad){
+                loginAction('FIRST_LOAD')(authDispatch);
+                const subscription = manager.onStateChange(state => {
+                    if (state === "PoweredOn") {
+                      subscription.remove();
+                      scanDevices();
+                    }
+                }, true);
+            }
+        }
     }, [mapHolderPost])
 
     const processMapView = () => {
@@ -54,23 +174,21 @@ const Map = () => {
                     console.log('isConnected ', isConnected);
                     if(isConnected){
                         manager.readRSSIForDevice(id).then((resp) => {
-                            console.log('RSSI: ', resp.rssi);
                             updatedRssi[id] = resp.rssi;
-                            renderAssets();
+                            renderTags();
                         }).catch((err) => {
-                            console.log('Error: ', err);
+                            console.error('Error: ', err);
                         })  
                     }else{
                         manager.connectToDevice(id, {autoConnect:true}).then(data => {
                             manager.readRSSIForDevice(id).then((resp) => {
-                                console.log('RSSI: ', resp.rssi);
                                 updatedRssi[id] = resp.rssi;
-                                renderAssets();
+                                renderTags();
                             }).catch((err) => {
-                                console.log('Error: ', err);
+                                console.error('Error: ', err);
                             })  
                         }).catch(err => {
-                            console.log('Error connecting: ', err);
+                            console.error('Error connecting: ', err);
                         })
                     }
                 })
@@ -84,12 +202,81 @@ const Map = () => {
         try{
             const permission = await requestLocationPermission();
             if(permission){
-                scanningDevices(deviceDispatch, devicesAction, manager, renderAssets, 5000, processMapView);
+                scanningDevices(deviceDispatch, devicesAction, manager, 10000).then(_ => {
+                    let assetIds = [];
+                    devices.forEach(dev => {
+                        if(dev.name && dev.name.toLowerCase().includes('asset')){
+                            assetIds.push(dev.id);
+                        }
+                    })
+                    // assetIds = ["da:6a:f3:e4:58:7f", "ef:e3:f2:81:8e:08"]
+                    initialDeviceData();
+                    if(assetIds.length){
+                        let newObj = deviceObj;
+                        fetchLocationData(assetIds).then(resp => {
+                            assetIds.forEach((id, idx) => {
+                                Object.keys(deviceObj).forEach(d => {
+                                    if(d === id){
+                                        newObj[d].coords = `${resp.data[idx].x} ${resp.data[idx].y}`;
+                                    }
+                                })
+                            
+                            })
+                            deviceObj = newObj
+                            getAssetLocationWithTimer(assetIds);
+                            renderTags();
+                            processMapView();
+                        })
+                    }else{
+                        renderTags();
+                        processMapView();
+                    }
+                    
+                }).catch(_ => {
+                    console.error("Error while scanning ");
+                })
             }
         }catch(err){
             console.error('Error in scanDevices ', err);
         }
     };
+
+    const getAssetLocationWithTimer = (assetIds) => {
+        try{
+            assetTimer = setInterval(() => {
+                
+                fetchLocationData(assetIds).then(resp => {
+                    let newObj = deviceObj;
+                    assetIds.forEach((id, idx) => {
+                        Object.keys(deviceObj).forEach(d => {
+                            if(d === id){
+                                newObj[d].coords = `${resp.data[idx].x} ${resp.data[idx].y}`;
+                            }
+                        })
+                    })
+                    deviceObj = newObj;
+                }).catch(err => {
+                    console.error('error in fetchLocation ', err);
+                })
+            }, 60000);
+        }catch(err){
+            console.error('Error in getAssetLocationWithTimer ', err);
+        }
+    }
+
+    const fetchLocationData = (assetIds) => {
+        try{
+            return new Promise((resolve, reject) => {
+                axiosInstance.post(`/azure/location/assetsloc`, {assetIds}).then(resp => {
+                    return resolve(resp.data);
+                }).catch(err => {
+                    return reject(err);
+                }) 
+            });
+        }catch(err){
+            console.error('Error in fetchLocationData ', err);
+        }
+    }
 
     const trackMobileDevice = (devicesArr) => {
         try{
@@ -172,6 +359,114 @@ const Map = () => {
         }
     }
 
+    const initialDeviceData = () => {
+        try{
+            let dData = {};
+            devices.forEach(dObj => {
+                dData[dObj.id] = {
+                    name: dObj.name,
+                    dType: dObj.dType,
+                    isSpecialDevice: dObj.isSpecialDevice,
+                    coords: dObj.coords,
+                    rssi: dObj.rssi,
+                    notLoaded: dObj.notLoaded
+                }
+                if(dObj.dType === 'beacon'){
+                    if(dObj.isScanned){
+                        if(scannedDevicesArr.indexOf(dObj.id) === -1)
+                            scannedDevicesArr.push(dObj.id);
+                    }
+                }
+            })
+
+            deviceObj = dData;
+        }catch(err){
+            console.error("Error in initialDeviceData ", err);
+        }
+    }
+
+    const renderTags = (searchText = "") => {
+        try{
+            let specialDevices = [];
+            Object.keys(deviceObj).forEach(key => {
+                let dObj = deviceObj[key];
+                if(dObj.isSpecialDevice){
+                    specialDevices.push(dObj);
+                }
+                if(dObj.coords){
+                    let axis = dObj.coords.split(' ');
+                    TAG_DATA.push({
+                        x: parseInt(axis[0]),
+                        y: parseInt(axis[1]),
+                        ...dObj
+                    })
+                }
+            })
+
+            if(specialDevices.length === 3){
+                let mobileCoords = trackMobileDevice(specialDevices);
+                TAG_DATA.push({
+                    x: mobileCoords.x,
+                    y: mobileCoords.y,
+                    name: 'mobile'
+                })
+            }
+            
+
+            let searchVal = null;
+            let maxWid = 0, maxHei = 0;
+
+            TAG_DATA.forEach((v, i) => {
+                if(searchText && searchText.toLowerCase() === v.name.toLowerCase()){
+                    searchVal = {
+                        x: v.x,
+                        y: v.y,
+                        text: v.name
+                    }
+                }
+
+                if(maxWid < Math.abs(v.x)) maxWid = Math.abs(v.x) 
+                if(maxHei < Math.abs(v.y)) maxHei = Math.abs(v.y) 
+            })
+            
+            let hei = mapHolderPos ? mapHolderPos.height : mapHolderPost.height,
+            wid = mapHolderPos ? mapHolderPos.width : mapHolderPost.width;
+
+            if(searchVal){
+                setLoadDevices(<Svg>
+                    <VictoryChart padding={5} containerComponent={ <VictoryZoomContainer onZoomDomainChange={(domain, props) => {circleCount = 0}}/> } domainPadding={{ y: 5, x: 5 }}
+                        domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
+                         height={hei}
+                         width={wid}>
+                        <VictoryScatter
+                            data={TAG_DATA}
+                            dataComponent={<DataPoint calcDistance={calcDistance} updatedRssi={updatedRssi} role={role} fetchLatestTagData={fetchLatestTagData} setDataLoading={setDataLoading} dataLoading={dataLoading}  />} />
+                        <DataLabel
+                            x={searchVal.x}
+                            y={searchVal.y}
+                            text={searchVal.text}
+                        />
+                    </VictoryChart>
+                </Svg>)
+            }else{
+                setLoadDevices(<Svg>
+                    <VictoryChart padding={5} containerComponent={ <VictoryZoomContainer onZoomDomainChange={(domain, props) => {circleCount = 0}}/> } domainPadding={{ y: 10, x: 10}}
+                        
+                        domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
+                         height={hei}
+                         width={wid}>
+                        <VictoryScatter
+                            data={TAG_DATA}
+                            dataComponent={<DataPoint calcDistance={calcDistance} updatedRssi={updatedRssi} role={role} fetchLatestTagData={fetchLatestTagData} setDataLoading={setDataLoading} dataLoading={dataLoading} />} />
+                    </VictoryChart>
+                </Svg>)
+            }
+            circleCount = 0;
+        }catch(err){
+            console.error("Error in renderTags[Map] ", err);
+        }
+    }
+
     const renderAssets = (searchedName = '') => {
         try{
             let assets = [];
@@ -183,10 +478,10 @@ const Map = () => {
                     }
                     let coordsArr = device.coords.split(' ');
                     if(device.dType === 'beacon'){
-                        if(device.isScanned){
-                            if(scannedDevicesArr.indexOf(device.id) === -1)
-                                scannedDevicesArr.push(device.id);
-                        }
+                        // if(device.isScanned){
+                        //     if(scannedDevicesArr.indexOf(device.id) === -1)
+                        //         scannedDevicesArr.push(device.id);
+                        // }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
                                 if(dataLoading || role === 'visitor') return;
@@ -222,7 +517,7 @@ const Map = () => {
                                     ]);
                                 }).catch(err => {
                                     setDataLoading(false);
-                                    console.log('ERROR ', err);
+                                    console.error('ERROR ', err);
                                 });
                                 
                             }}>
@@ -234,18 +529,6 @@ const Map = () => {
                             </TouchableOpacity>
                         )
                     }else{
-                        // if(device.isScanned){
-                            // manager.connectToDevice(device.id, {autoConnect:true}).then(data => {
-                            //     console.log(data);
-                            // }).catch(err => {
-                            //     console.log('Error connecting: ', err);
-                            // })
-                            // manager.readRSSIForDevice(device.id).then((resp) => {
-                            //     console.log('RSSI: ', resp);
-                            // }).catch((err) => {
-                            //     console.log('Error: ', err);
-                            // })    
-                        // }
                         assets.push(
                             <TouchableOpacity key={device.id} style={[styles.tag_container, {top: parseInt(coordsArr[1]), left: parseInt(coordsArr[0])}]} onPress={() => {
                                 if(dataLoading || role === 'visitor') return;
@@ -280,7 +563,7 @@ const Map = () => {
                                     ]);
                                 }).catch(err => {
                                     setDataLoading(false);
-                                    console.log('ERROR ', err);
+                                    console.error('ERROR ', err);
                                 });
                                 
                             }} >
@@ -318,31 +601,36 @@ const Map = () => {
     }
 
     return(
-        <View>
-            <SearchBar containerStyle={{backgroundColor: 'white'}} style={styles.searchCont} 
-                inputContainerStyle={{backgroundColor: 'white'}}
-                placeholder="Search.."
-                onChangeText={(val) => {setSearch(val); renderAssets(val)}}
-                value={search}
-            />
-            <View style={styles.mapContainer}>
-                {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
-                    <ActivityIndicator color={'teal'} size={35} />
-                </View> : null}
-                {loadDevices ? <View style={styles.mapHolder} ref={view => {
-                    if(!view) return;
-                    view.measure((ps, pt, width, height, x, y) => {
-                        setmapHolderPost({x, y, height, width})
-                    })
-                    
-                }}>
-                    {loadDevices}
-                </View> : 
-                <View style={styles.loaderContainer}>
-                    <ActivityIndicator color={'teal'} size={25} />
-                </View>}
+        <View style={{width: '100%', height: '100%'}}>
+            {!loadDevices && <View style={[styles.loaderContainer, {zIndex: 10}]}>
+                <ActivityIndicator color={'teal'} size={25} />
+            </View>}
+            <View>
+                <SearchBar containerStyle={{backgroundColor: 'white'}} style={styles.searchCont} 
+                    inputContainerStyle={{backgroundColor: 'white'}}
+                    placeholder="Search.."
+                    onChangeText={(val) => {setSearch(val); renderTags(val)}}
+                    value={search}
+                />
+                <View style={styles.mapContainer}>
+                    {dataLoading ? <View pointerEvents="none" style={styles.dt_loading_cont}>
+                        <ActivityIndicator color={'teal'} size={35} />
+                    </View> : null}
+                    <View style={[styles.mapHolder]} ref={view => {
+                        if(!view) return;
+                        view.measure((ps, pt, width, height, x, y) => {
+                            setmapHolderPost({x, y, height, width})
+                        })
+                        
+                    }}>
+                        <ImageBackground source={require('../../assets/images/building.jpg')} style={{width: '100%', height: '100%', position: 'absolute', opacity: 0.2}}>
+                        </ImageBackground>
+                        {loadDevices}
+                    </View>
+                </View>
             </View>
         </View>
+        
     )
 }
 

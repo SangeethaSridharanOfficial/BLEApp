@@ -59,7 +59,7 @@ const Devices = () => {
         try{
             if(validateXYCoords(xCoordsVal, yCoordsVal)){
                 let cordinatesVal = `${xCoordsVal} ${yCoordsVal}`;
-                devicesAction({cordinatesVal, currentDevice, dType: deviceType, isSpecialDevice : addForMobile}, 'SET_COORDS')(deviceDispatch);
+                devicesAction({cordinatesVal, id: currentDevice.id, dType: deviceType, isSpecialDevice : addForMobile}, 'SET_COORDS')(deviceDispatch);
                 devicesAction({deviceType, currentDevice}, 'SET_DTYPE')(deviceDispatch);
                 handleDevice('ADD', deviceType, cordinatesVal, currentDevice, addForMobile);
             }else{
@@ -160,7 +160,7 @@ const Devices = () => {
                         // resp.data.data.forEach(data => {
                         //     if(data._id === device.id){
                         if(device.coords){ 
-                            devicesAction({cordinatesVal: device.coords, dType: device.dType, currentDevice: device}, 'SET_COORDS')(deviceDispatch);
+                            devicesAction({cordinatesVal: device.coords, dType: device.dType, id: device.id, isSpecialDevice: device.isSpecialDevice}, 'SET_COORDS')(deviceDispatch);
                             resultedDevices.push(
                                 <Device key={device.id} device={device} handleToggle={handleToggle} isAdded={true} initCoords={device.coords}/>
                             )

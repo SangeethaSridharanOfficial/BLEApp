@@ -14,30 +14,34 @@ const validateXYCoords = (x, y) => {
     }
 }
 
-const scanningDevices = (deviceDispatch, devicesAction, manager, callbackFunc, delay, processMapView) => {
+const scanningDevices = (deviceDispatch, devicesAction, manager, delay,) => {
+    return new Promise((resolve, reject) => {
+        try{
+            // stop scanning devices after 5 seconds
+            var timer = setTimeout(() => {
+                manager.stopDeviceScan();
+                clearTimeout(timer);
+                return resolve();
+            }, delay);
 
-    // stop scanning devices after 5 seconds
-    var timer = setTimeout(() => {
-        manager.stopDeviceScan();
-        // manager.destroy();
-        if(callbackFunc) {callbackFunc(); processMapView();}
-        clearTimeout(timer);
-    }, delay);
+            // scan devices
+            manager.startDeviceScan(null, null, (error, scannedDevice) => {
+                if (error) {
+                    console.warn(error);
+                }
 
-    // scan devices
-    manager.startDeviceScan(null, null, (error, scannedDevice) => {
-        if (error) {
-            console.warn(error);
+                // if a device is detected add the device to the list by dispatching the action into the reducer
+                if (scannedDevice) {
+                    console.log('Scanned Dev ', scannedDevice.id);
+                    scannedDevice['isScanned'] = true;
+                    devicesAction(scannedDevice, 'SCANNED_DEVICES')(deviceDispatch);
+                }
+            });
+        }catch(err){
+            console.error("Error in scanningDevice ", err);
+            return reject();
         }
-
-        // if a device is detected add the device to the list by dispatching the action into the reducer
-        if (scannedDevice) {
-            console.log('Scanned Dev ', scannedDevice.id);
-            scannedDevice['isScanned'] = true;
-            devicesAction(scannedDevice, 'SCANNED_DEVICES')(deviceDispatch);
-        }
-    });
-    
+    })
 };
 
 export {

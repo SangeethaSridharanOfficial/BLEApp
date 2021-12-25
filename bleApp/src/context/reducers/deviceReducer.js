@@ -20,6 +20,7 @@ const deviceReducer = (state, {type, payload}) => {
                     state.devices.push(payload);
                 }
             }else{
+                console.log("devices ", payload)
                 state.devices.push(payload);
             }
             return {...state};
@@ -118,12 +119,12 @@ const deviceReducer = (state, {type, payload}) => {
 
         case 'SET_COORDS':
             state.coords = payload.cordinatesVal;
-            if(payload.currentDevice){
+            if(payload.id){
                 state.devices.forEach(device => {
-                    if(device.id === payload.currentDevice.id){
+                    if(device.id === payload.id){
                         device['coords'] = payload.cordinatesVal;
                         device['dType'] = payload.dType;
-                        device['isSpecialDevice'] = payload.currentDevice.isSpecialDevice
+                        device['isSpecialDevice'] = payload.isSpecialDevice
                     }
                 });
             }
