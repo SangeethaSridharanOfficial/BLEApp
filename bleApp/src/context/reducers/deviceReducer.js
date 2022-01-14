@@ -10,6 +10,7 @@ const deviceReducer = (state, {type, payload}) => {
                             if(device.dType){
                                 tempDevice['dType'] = device.dType;
                                 tempDevice['coords'] = device.coords;
+                                tempDevice['isAdded'] = device.isAdded;
                                 state.devices[idx] = tempDevice;
                             }else{
                                 state.devices[idx] = payload;
@@ -34,6 +35,7 @@ const deviceReducer = (state, {type, payload}) => {
                             tempDevice['dType'] = payload.dType;
                             tempDevice['coords'] = payload.coords;
                             tempDevice['isSpecialDevice'] = payload.isSpecialDevice;
+                            tempDevice['isAdded'] = payload.isAdded;
                             state.devices[idx] = tempDevice;
                         }
                     })
@@ -125,6 +127,7 @@ const deviceReducer = (state, {type, payload}) => {
                         device['coords'] = payload.cordinatesVal;
                         device['dType'] = payload.dType;
                         device['isSpecialDevice'] = payload.isSpecialDevice
+                        device['isAdded'] = payload.isAdded
                     }
                 });
             }

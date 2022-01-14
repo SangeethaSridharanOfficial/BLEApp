@@ -12,14 +12,11 @@ let manager = new BleManager();
 import axiosInstance from '../../utils/axiosInstance';
 import { Dimensions } from "react-native";
 import { SearchBar } from 'react-native-elements';
-import { VictoryChart, VictoryScatter, VictoryZoomContainer, VictoryLabel } from "victory-native";
+import { VictoryChart, VictoryScatter, VictoryZoomContainer, VictoryLabel, VictoryAxis } from "victory-native";
 import {Text, Svg, Circle, Marker} from "react-native-svg";
 
 var assetTimer = null, interval = null;
-var TAG_DATA = [
-    { x: -1, y: -2, name: 'Asset', id: "da:6a:f3:e4:58:7f" },
-    { x: -10, y: 5, name: 'Asset1', id: "ef:e3:f2:81:8e:08" }
-]
+var TAG_DATA = [], isUnmounted = false;
 
 let circleCount = 0;
 
@@ -117,18 +114,21 @@ const Map = () => {
     let scannedDevicesArr = [], updatedRssi = {};
     const [search, setSearch] = useState('');
     var [mapHolderPost, setmapHolderPost] = useState(null);
+    const [deviceLoading, setDeviceLoading] = useState(false);
     
 
     useEffect(() => {
+        isUnmounted = false;
+        circleCount = 0;
+        setDeviceLoading(true);
         if(!firstLoad){
             initialDeviceData();
             let assetIds = [];
             devices.forEach(dev => {
-                if(dev.name && dev.name.toLowerCase().includes('asset')){
+                if(dev.name && dev.name.toLowerCase().includes('asset') && dev.isAdded){
                     assetIds.push(dev.id);
                 }
             })
-            // assetIds = ["da:6a:f3:e4:58:7f", "ef:e3:f2:81:8e:08"]
             if(assetIds.length){
                 getAssetLocationWithTimer(assetIds);
             }
@@ -141,13 +141,15 @@ const Map = () => {
             scannedDevicesArr = [];
             Object.keys(deviceObj).forEach(key => {
                 let dObj = deviceObj[key];
-                if( dObj.dType !== 'beacon' ){
-                    devicesAction({cordinatesVal: dObj.coords, isSpecialDevice: dObj.isSpecialDevice, id: key, dType: dObj.dType}, 'SET_COORDS')(deviceDispatch);
+                if( dObj.dType && dObj.dType !== 'beacon' ){
+                    devicesAction({isAdded: true, cordinatesVal: dObj.coords, isSpecialDevice: dObj.isSpecialDevice, id: key, dType: dObj.dType}, 'SET_COORDS')(deviceDispatch);
                 }
             })
             
             if(interval) clearInterval(interval);
             clearInterval(assetTimer);
+            TAG_DATA = [];
+            isUnmounted = true;
         }
     }, []);
 
@@ -169,6 +171,7 @@ const Map = () => {
     const processMapView = () => {
         try{
             interval = setInterval(() => {
+                if(isUnmounted) return;
                 scannedDevicesArr.forEach(async(id) => {
                     let isConnected = await manager.isDeviceConnected(id);
                     console.log('isConnected ', isConnected);
@@ -205,7 +208,7 @@ const Map = () => {
                 scanningDevices(deviceDispatch, devicesAction, manager, 10000).then(_ => {
                     let assetIds = [];
                     devices.forEach(dev => {
-                        if(dev.name && dev.name.toLowerCase().includes('asset')){
+                        if(dev.name && dev.name.toLowerCase().includes('asset') && dev.isAdded){
                             assetIds.push(dev.id);
                         }
                     })
@@ -216,7 +219,7 @@ const Map = () => {
                         fetchLocationData(assetIds).then(resp => {
                             assetIds.forEach((id, idx) => {
                                 Object.keys(deviceObj).forEach(d => {
-                                    if(d === id){
+                                    if(d === id && resp.data[idx]){
                                         newObj[d].coords = `${resp.data[idx].x} ${resp.data[idx].y}`;
                                     }
                                 })
@@ -244,17 +247,18 @@ const Map = () => {
     const getAssetLocationWithTimer = (assetIds) => {
         try{
             assetTimer = setInterval(() => {
-                
+                if(isUnmounted) return;
                 fetchLocationData(assetIds).then(resp => {
                     let newObj = deviceObj;
                     assetIds.forEach((id, idx) => {
                         Object.keys(deviceObj).forEach(d => {
-                            if(d === id){
+                            if(d === id && resp.data[idx].id === id){
                                 newObj[d].coords = `${resp.data[idx].x} ${resp.data[idx].y}`;
                             }
                         })
                     })
                     deviceObj = newObj;
+                    renderTags();
                 }).catch(err => {
                     console.error('error in fetchLocation ', err);
                 })
@@ -363,18 +367,20 @@ const Map = () => {
         try{
             let dData = {};
             devices.forEach(dObj => {
-                dData[dObj.id] = {
-                    name: dObj.name,
-                    dType: dObj.dType,
-                    isSpecialDevice: dObj.isSpecialDevice,
-                    coords: dObj.coords,
-                    rssi: dObj.rssi,
-                    notLoaded: dObj.notLoaded
-                }
-                if(dObj.dType === 'beacon'){
-                    if(dObj.isScanned){
-                        if(scannedDevicesArr.indexOf(dObj.id) === -1)
-                            scannedDevicesArr.push(dObj.id);
+                if(dObj.isAdded){
+                    dData[dObj.id] = {
+                        name: dObj.name,
+                        dType: dObj.dType,
+                        isSpecialDevice: dObj.isSpecialDevice,
+                        coords: dObj.coords,
+                        rssi: dObj.rssi,
+                        notLoaded: dObj.notLoaded
+                    }
+                    if(dObj.dType === 'beacon'){
+                        if(dObj.isScanned){
+                            if(scannedDevicesArr.indexOf(dObj.id) === -1)
+                                scannedDevicesArr.push(dObj.id);
+                        }
                     }
                 }
             })
@@ -389,18 +395,22 @@ const Map = () => {
         try{
             let specialDevices = [];
             Object.keys(deviceObj).forEach(key => {
-                let dObj = deviceObj[key];
-                if(dObj.isSpecialDevice){
-                    specialDevices.push(dObj);
+                if(devices.find(dev => dev.id === key).isAdded){
+                    let dObj = deviceObj[key];
+                    dObj['id'] = key;
+                    if(dObj.isSpecialDevice){
+                        specialDevices.push(dObj);
+                    }
+                    if(dObj.coords){
+                        let axis = dObj.coords.split(' ');
+                        TAG_DATA.push({
+                            x: parseInt(axis[0]),
+                            y: parseInt(axis[1]),
+                            ...dObj
+                        })
+                    }
                 }
-                if(dObj.coords){
-                    let axis = dObj.coords.split(' ');
-                    TAG_DATA.push({
-                        x: parseInt(axis[0]),
-                        y: parseInt(axis[1]),
-                        ...dObj
-                    })
-                }
+                
             })
 
             if(specialDevices.length === 3){
@@ -414,7 +424,7 @@ const Map = () => {
             
 
             let searchVal = null;
-            let maxWid = 0, maxHei = 0;
+            let maxWid = 10, maxHei = 10;
 
             TAG_DATA.forEach((v, i) => {
                 if(searchText && searchText.toLowerCase() === v.name.toLowerCase()){
@@ -431,13 +441,17 @@ const Map = () => {
             
             let hei = mapHolderPos ? mapHolderPos.height : mapHolderPost.height,
             wid = mapHolderPos ? mapHolderPos.width : mapHolderPost.width;
-
             if(searchVal){
                 setLoadDevices(<Svg>
-                    <VictoryChart padding={5} containerComponent={ <VictoryZoomContainer onZoomDomainChange={(domain, props) => {circleCount = 0}}/> } domainPadding={{ y: 5, x: 5 }}
+                    <VictoryChart padding={5} domainPadding={{ y: 5, x: 5 }}
                         domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
                          height={hei}
                          width={wid}>
+                        <VictoryAxis style={{ 
+                            axis: {stroke: "transparent"}, 
+                            ticks: {stroke: "transparent"},
+                            tickLabels: { fill:"transparent"} 
+                        }} />
                         <VictoryScatter
                             data={TAG_DATA}
                             dataComponent={<DataPoint calcDistance={calcDistance} updatedRssi={updatedRssi} role={role} fetchLatestTagData={fetchLatestTagData} setDataLoading={setDataLoading} dataLoading={dataLoading}  />} />
@@ -450,11 +464,15 @@ const Map = () => {
                 </Svg>)
             }else{
                 setLoadDevices(<Svg>
-                    <VictoryChart padding={5} containerComponent={ <VictoryZoomContainer onZoomDomainChange={(domain, props) => {circleCount = 0}}/> } domainPadding={{ y: 10, x: 10}}
-                        
+                    <VictoryChart padding={5} domainPadding={{ y: 10, x: 10}}
                         domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
                          height={hei}
                          width={wid}>
+                        <VictoryAxis style={{ 
+                            axis: {stroke: "transparent"}, 
+                            ticks: {stroke: "transparent"},
+                            tickLabels: { fill:"transparent"} 
+                        }} />
                         <VictoryScatter
                             data={TAG_DATA}
                             dataComponent={<DataPoint calcDistance={calcDistance} updatedRssi={updatedRssi} role={role} fetchLatestTagData={fetchLatestTagData} setDataLoading={setDataLoading} dataLoading={dataLoading} />} />
@@ -462,6 +480,7 @@ const Map = () => {
                 </Svg>)
             }
             circleCount = 0;
+            setDeviceLoading(false);
         }catch(err){
             console.error("Error in renderTags[Map] ", err);
         }
@@ -602,7 +621,7 @@ const Map = () => {
 
     return(
         <View style={{width: '100%', height: '100%'}}>
-            {!loadDevices && <View style={[styles.loaderContainer, {zIndex: 10}]}>
+            {!loadDevices && deviceLoading && <View style={[styles.loaderContainer, {zIndex: 10}]}>
                 <ActivityIndicator color={'teal'} size={25} />
             </View>}
             <View>

@@ -67,12 +67,11 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt, device}) => 
             </View>
             <View style={styles.tagBtns_wrapper}>
                 <TouchableOpacity style={styles.at_btn} onPress={() => {
-                    console.log("wid ", maxPos.maxWidth, maxPos.maxHeight)
                     let x = xCoordsVal*20;
                     let y = yCoordsVal*20;
                     if(parseInt(x) <= maxPos.maxWidth && parseInt(y) <= maxPos.maxHeight
                     && parseInt(x) >= widthCheck && parseInt(y) >= heightCheck){
-                        addCoordinates('beacon', x, y, isSelected);
+                        addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
                         resetValues();
                     }else{
                         alert('Please insert proper X and Y values again');
@@ -85,9 +84,8 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt, device}) => 
                     if(parseInt(xCoordsVal) <= maxPos.maxWidth && parseInt(yCoordsVal) <= maxPos.maxHeight
                     && parseInt(xCoordsVal) > widthCheck && parseInt(yCoordsVal) > heightCheck){
                         fetchLocationData([device.id]).then(resp => {
-                            xCoordsVal = `${resp.data[0].x}`;
-                            yCoordsVal = `${resp.data[0].y}`;
-                            addCoordinates('asset', xCoordsVal, yCoordsVal, isSelected);
+                            let x = `${resp.data[0].x}`, y = `${resp.data[0].y}`;
+                            addCoordinates('asset', x, y, isSelected);
                             resetValues();
                         }).catch(err => {
                             console.error('error in fetchLocation ', err);

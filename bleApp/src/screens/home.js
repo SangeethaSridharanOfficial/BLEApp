@@ -30,6 +30,7 @@ const Home = () => {
                 resp.data.data.forEach(data => {
                     data['notLoaded'] = true;
                     data['id'] = data._id;
+                    data['isAdded'] = true;
                     devicesAction(data, 'STORED_DEVICES')(deviceDispatch);
                 })
                 setIsDeviceLoaded(true);

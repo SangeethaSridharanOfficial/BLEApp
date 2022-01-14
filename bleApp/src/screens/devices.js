@@ -139,6 +139,7 @@ const Devices = () => {
                 if(devices.length){
                     devices.forEach(device => {
                         if(device.isScanned) isDeviceScanned = true;
+                        
                         // if(device.isScanned){
                             // // device.connect()
                             // // .then((device) => {
@@ -171,7 +172,7 @@ const Devices = () => {
                         // if(!count){
                         else{
                             resultedDevices.push(
-                                <Device key={device.id} device={device} handleToggle={handleToggle}/>
+                                <Device key={device.id} device={device} isAdded={device.isAdded} handleToggle={handleToggle}/>
                             )
                             // count--;
                         }
