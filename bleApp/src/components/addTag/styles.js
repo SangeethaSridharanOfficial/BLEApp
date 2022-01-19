@@ -55,9 +55,9 @@ export default StyleSheet.create({
         width: '100%',
         height: 50,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
-        marginBottom: 20
+        marginBottom: 10
     },
     at_btn: {
         backgroundColor: colors.accent,
@@ -91,9 +91,10 @@ export default StyleSheet.create({
     },
     checkboxContainer: {
         flexDirection: "row",
-        marginBottom: 20,
+        marginBottom: 10,
+        marginTop: 10,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center" 
     },
     tag_chkbx: {
         alignSelf: "center",
