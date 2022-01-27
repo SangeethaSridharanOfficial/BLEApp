@@ -135,9 +135,9 @@ const AddTag = ({toggleModal, addCoordinates, disableSpecialDevOpt, device}) => 
                     if(isEditable){
                         let x = xCoordsVal*20;
                         let y = yCoordsVal*20;
-                        
-                        if(xCoordsVal != '' && yCoordsVal != '' && parseInt(x) <= maxPos.maxWidth && parseInt(y) <= maxPos.maxHeight
-                        && parseInt(x) >= widthCheck && parseInt(y) >= heightCheck){
+                        //&& parseInt(x) <= maxPos.maxWidth && parseInt(y) <= maxPos.maxHeight
+                        //&& parseInt(x) >= widthCheck && parseInt(y) >= heightCheck
+                        if(xCoordsVal != '' && yCoordsVal != '' ){
                             addCoordinates('beacon', xCoordsVal, yCoordsVal, isSelected);
                             resetValues();
                         }else{

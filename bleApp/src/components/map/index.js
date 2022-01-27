@@ -171,7 +171,10 @@ const Map = () => {
     const processMapView = () => {
         try{
             interval = setInterval(() => {
-                if(isUnmounted) return;
+                if(isUnmounted) {
+                    clearInterval(interval);
+                    return;
+                };
                 scannedDevicesArr.forEach(async(id) => {
                     let isConnected = await manager.isDeviceConnected(id);
                     console.log('isConnected ', isConnected);
@@ -180,7 +183,7 @@ const Map = () => {
                             updatedRssi[id] = resp.rssi;
                             renderTags();
                         }).catch((err) => {
-                            console.error('Error: ', err);
+                            console.log('Error: ', err);
                         })  
                     }else{
                         manager.connectToDevice(id, {autoConnect:true}).then(data => {
@@ -188,10 +191,10 @@ const Map = () => {
                                 updatedRssi[id] = resp.rssi;
                                 renderTags();
                             }).catch((err) => {
-                                console.error('Error: ', err);
+                                console.log('Error: ', err);
                             })  
                         }).catch(err => {
-                            console.error('Error connecting: ', err);
+                            console.log('Error connecting: ', err);
                         })
                     }
                 })
@@ -247,7 +250,10 @@ const Map = () => {
     const getAssetLocationWithTimer = (assetIds) => {
         try{
             assetTimer = setInterval(() => {
-                if(isUnmounted) return;
+                if(isUnmounted) {
+                    clearInterval(assetTimer);
+                    return;
+                };
                 fetchLocationData(assetIds).then(resp => {
                     let newObj = deviceObj;
                     assetIds.forEach((id, idx) => {
@@ -441,10 +447,16 @@ const Map = () => {
             
             let hei = mapHolderPos ? mapHolderPos.height : mapHolderPost.height,
             wid = mapHolderPos ? mapHolderPos.width : mapHolderPost.width;
+
+            console.log("width ", wid, hei);
+            // maxWid = Math.round((wid-20)/2);
+            // maxHei = Math.round((hei-50)/2);
+            maxHei = (hei/wid) * 50;
+            console.log("Max Height ", maxHei);
             if(searchVal){
                 setLoadDevices(<Svg>
                     <VictoryChart padding={5} domainPadding={{ y: 5, x: 5 }}
-                        domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
+                        domain={{ x: [50, -50], y: [maxHei, -maxHei] }}
                          height={hei}
                          width={wid}>
                         <VictoryAxis style={{ 
@@ -465,7 +477,7 @@ const Map = () => {
             }else{
                 setLoadDevices(<Svg>
                     <VictoryChart padding={5} domainPadding={{ y: 10, x: 10}}
-                        domain={{ x: [maxWid, -maxWid], y: [maxHei, -maxHei] }}
+                        domain={{ x: [50, -50], y: [maxHei, -maxHei] }}
                          height={hei}
                          width={wid}>
                         <VictoryAxis style={{ 
